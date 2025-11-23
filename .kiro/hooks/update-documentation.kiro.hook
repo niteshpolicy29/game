@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Update Project Documentation",
+  "description": "Analyzes the project and updates/creates README, Game Architecture, Performance, and Kiro Impact documentation files",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Please analyze all project files and update or create the following documentation files:\n\n1. README.md - Project overview, setup instructions, and how to run\n2. GAME_ARCHITECTURE.md - Technical architecture, game structure, components, and design patterns\n3. PERFORMANCE.md - Performance considerations, optimizations, and benchmarks\n4. KIRO_IMPACT.md - Document how Kiro helped accelerate development, specific features built with Kiro's assistance, time saved, and productivity improvements\n\nFor each file:\n- Read existing content if it exists\n- Update with current project state\n- Create from scratch if it doesn't exist\n- Keep documentation accurate and comprehensive\n- For KIRO_IMPACT.md, analyze the development process and highlight specific ways Kiro contributed to faster development"
+  },
+  "workspaceFolderName": "kiro",
+  "shortName": "update-documentation"
+}
