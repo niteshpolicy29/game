@@ -141,6 +141,25 @@ if (this.enemies && this.enemies.children) {
 - No updates for destroyed enemies
 - Reduced CPU usage
 
+#### Form-Specific Physics
+
+Player applies different physics based on form:
+
+```javascript
+// Player.js
+if (this.isMarshmallow) {
+    this.applyBuoyancy();
+    // No jump allowed
+} else {
+    // Normal jump mechanics
+}
+```
+
+**Benefits:**
+- Only calculate buoyancy when needed
+- Cleaner conditional logic
+- Easy to extend with more forms
+
 #### Efficient State Checks
 
 Player grounded check uses physics body properties:
@@ -360,11 +379,16 @@ arcade: {
 
 **Symptom**: FPS drops when many enemies on screen
 
-**Solution**: Limit enemy count or use object pooling
+**Solution**: Current implementation has 8 enemies which performs well. If adding more, consider:
 
 ```javascript
-// Limit active enemies
+// Limit active enemies or use culling
 const MAX_ACTIVE_ENEMIES = 10;
+
+// Or cull off-screen enemies
+if (!this.scene.cameras.main.worldView.contains(this.x, this.y)) {
+    return; // Skip update
+}
 ```
 
 ### Issue: Memory Growth Over Time
@@ -427,6 +451,8 @@ this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 - [ ] Verify 60 FPS on mid-range hardware
 - [ ] Test scene transitions
 - [ ] Verify asset loading
+- [ ] Test marshmallow transformation performance
+- [ ] Verify particle effects don't cause frame drops
 
 ### During Development
 - [ ] Use physics debug mode sparingly
@@ -435,6 +461,7 @@ this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 - [ ] Test with many enemies
 - [ ] Check memory after long sessions
 - [ ] Verify cleanup in scene transitions
+- [ ] Test transformation particle cleanup
 
 ## Future Optimization Opportunities
 
@@ -535,9 +562,11 @@ export default {
 The game is well-optimized for 60 FPS gameplay on modern hardware. Key optimizations include:
 
 1. Static physics bodies for platforms
-2. Texture caching and reuse
+2. Texture caching and reuse (candy ball, marshmallow, enemies)
 3. Efficient collision detection
 4. Tween-based animations
 5. Proper memory cleanup
+6. Conditional physics (buoyancy only in marshmallow form)
+7. Particle cleanup after transformation effects
 
-Performance is stable with room for future enhancements like object pooling and sprite atlases if needed for larger levels or more complex gameplay.
+Performance is stable across the 8220-unit world with 8 enemies and 30+ platforms. The marshmallow transformation mechanic adds minimal overhead due to conditional physics application. Room for future enhancements like object pooling and sprite atlases if needed for larger levels or more complex gameplay.

@@ -28,6 +28,7 @@ export class GameScene extends Phaser.Scene {
         // Initialize lives system
         this.lives = 3;
         this.isRespawning = false;
+        this.isFalling = false;
         this.currentCheckpoint = LevelData.playerStart;
         this.goalReached = false;
         
@@ -86,7 +87,8 @@ export class GameScene extends Phaser.Scene {
             W: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
             A: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
             S: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-            D: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
+            D: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+            E: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)
         };
         
         // Setup camera to follow player at normal zoom
@@ -106,8 +108,22 @@ export class GameScene extends Phaser.Scene {
     }
     
     update() {
-        // Update player
-        if (!this.isRespawning) {
+        // Check if player fell into a gap (below ground level)
+        if (this.player.y > 1080 && !this.isRespawning && !this.isFalling) {
+            this.isFalling = true;
+            // Disable player controls
+            this.player.body.setAccelerationX(0);
+            this.player.body.setVelocityX(0);
+            
+            // Trigger death after a short delay
+            this.time.delayedCall(500, () => {
+                this.isFalling = false;
+                this.loseLife();
+            });
+        }
+        
+        // Update player (only if not falling)
+        if (!this.isRespawning && !this.isFalling) {
             this.player.update(this.cursors, this.keys);
         }
         
@@ -118,11 +134,6 @@ export class GameScene extends Phaser.Scene {
                     enemy.update();
                 }
             });
-        }
-        
-        // Check if player fell off the world
-        if (this.player.y > LevelData.worldBounds.height + 50) {
-            this.loseLife();
         }
     }
     

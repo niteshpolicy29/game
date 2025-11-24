@@ -4,6 +4,8 @@
 
 Haunted Pumpkin is a 2D physics-based platformer built with Phaser 3. The architecture follows a scene-based structure with clear separation between game logic, rendering, and state management. The game uses Arcade Physics for collision detection and movement, with custom entity classes extending Phaser's built-in types.
 
+The game features a unique marshmallow transformation mechanic where the player can toggle between a candy ball (normal physics) and a marshmallow form (buoyant, slow-falling) to navigate challenging platforming sections with varied gap sizes.
+
 ## System Architecture
 
 ```
@@ -134,32 +136,40 @@ Central configuration for all game constants and Phaser settings.
 
 **Visual Features:**
 - Candy ball with orange/yellow spiral stripes
-- Dynamic shine sprite that points toward moon
+- Marshmallow form with soft white pillowy texture
+- Dynamic shine sprite that points toward moon (hidden in marshmallow form)
 - Rolling animation based on velocity
 - Glow outline effect
+- Transformation particle effects
 
 **Physics Properties:**
 ```javascript
 {
   radius: 48,
-  maxSpeed: 480,
-  acceleration: 1440,
+  maxSpeed: 480,              // Candy ball
+  marshmallowMaxSpeed: 240,   // Marshmallow (slower)
+  acceleration: 1440,         // Candy ball
+  marshmallowAcceleration: 720, // Marshmallow (less responsive)
   friction: 720,
   jumpVelocity: -960,
-  jumpBufferWindow: 150ms
+  jumpBufferWindow: 150ms,
+  buoyancyForce: -400         // Upward force in marshmallow form
 }
 ```
 
 **Key Methods:**
 - `createVisuals()`: Generates candy ball texture with stripes and glow
+- `createMarshmallowTexture()`: Generates marshmallow texture with pillowy appearance
 - `createShine()`: Creates separate shine sprite
 - `update(cursors, keys)`: Main update loop for input and movement
-- `moveLeft()` / `moveRight()`: Apply horizontal acceleration
+- `toggleMarshmallow()`: Switch between candy and marshmallow forms with particle effects
+- `moveLeft()` / `moveRight()`: Apply horizontal acceleration (speed varies by form)
 - `applyFriction()`: Smooth deceleration when no input
-- `jump()`: Apply jump velocity with buffering
+- `applyBuoyancy()`: Apply upward force when falling in marshmallow form
+- `jump()`: Apply jump velocity with buffering (disabled in marshmallow form)
 - `checkGrounded()`: Update grounded state and handle buffered jumps
-- `updateRoll()`: Rotate ball based on velocity
-- `updateShinePosition()`: Position shine toward moon
+- `updateRoll()`: Rotate ball based on velocity (slower in marshmallow form)
+- `updateShinePosition()`: Position shine toward moon (hidden in marshmallow form)
 
 **Jump Buffering:**
 If jump is pressed while airborne, it's buffered for 150ms. If the player lands within that window, the jump executes immediately, creating responsive controls.
@@ -210,22 +220,7 @@ If jump is pressed while airborne, it's buffered for 150ms. If the player lands 
 
 #### Checkpoint (src/entities/Checkpoint.js)
 
-**Extends**: `Phaser.Physics.Arcade.Sprite`
-
-**Visual Features:**
-- Lantern post with flame
-- Inactive: Gray with dim flame
-- Active: Orange with bright glowing flame
-
-**Behavior:**
-- Activates on player overlap
-- Saves respawn position
-- Shows activation particles and glow effect
-- Displays "CHECKPOINT SAVED!" message
-
-**Methods:**
-- `createVisuals()`: Generate lantern textures (inactive and active)
-- `activate()`: Switch to active state with effects
+**Note**: Checkpoints have been removed from the current level design. The level now focuses on continuous platforming challenges without checkpoint saves. Players must complete the entire level in one attempt.
 
 #### Goal (src/entities/Goal.js)
 
@@ -271,11 +266,13 @@ If jump is pressed while airborne, it's buffered for 150ms. If the player lands 
 ```
 
 **Current Level:**
-- World size: 6400x1080
-- 3 checkpoints dividing level into sections
+- World size: 8220x1080
+- No checkpoints - continuous challenge
 - 8 enemies with varied patrol routes
-- 20+ platforms creating platforming challenges
-- Extended ground platform spanning entire width
+- 30+ platforms creating platforming challenges
+- Ground divided into segments with varied gap sizes (small, medium, large, huge)
+- 2 water areas marked for visual distinction
+- Floating platforms over gaps requiring precise jumps or marshmallow transformation
 
 ### 5. Input System
 
@@ -307,39 +304,18 @@ If jump is pressed while airborne, it's buffered for 150ms. If the player lands 
 
 ### 7. Lives System
 
-**Implementation:**
-- 3 lives represented by heart icons
-- Hearts displayed in top-left corner
-- Fixed to viewport (scroll factor 0)
-- Alpha reduced for lost lives (0.3)
-
-**Flow:**
-1. Player hits enemy or falls off world
-2. `loseLife()` called
-3. Life counter decremented
-4. UI updated
-5. If lives > 0: Show resurrection screen and respawn
-6. If lives = 0: Transition to GameOverScene
-
-**Resurrection:**
-- Dark overlay with "RESURRECTING..." text
-- Warning about bats
-- Ghost particle effects
-- 1.8 second duration
-- Player respawns at last checkpoint
+**Note**: The lives system has been removed from the current implementation. Players now have unlimited attempts, with instant respawn at the start position when falling off the world or hitting enemies. This creates a more forgiving, exploration-focused experience where players can experiment with the marshmallow transformation mechanic without penalty.
 
 ### 8. Collision System
 
 **Collision Pairs:**
 - Player ↔ Platforms: Collider (blocks movement)
-- Player ↔ Enemies: Overlap (triggers `hitEnemy`)
-- Player ↔ Checkpoints: Overlap (triggers `reachCheckpoint`)
+- Player ↔ Enemies: Overlap (triggers instant respawn)
 - Player ↔ Goal: Overlap (triggers `reachGoal`)
 
 **Physics Groups:**
 - Platforms: Static group (no physics updates)
 - Enemies: Dynamic group (updated each frame)
-- Checkpoints: Static group with overlap detection
 - Goal: Single sprite with overlap detection
 
 ## Design Patterns
@@ -428,22 +404,13 @@ GameScene.update() [60 FPS]
   → Render frame
 ```
 
-### Life Loss Flow
+### Death and Respawn Flow
 ```
 Player touches enemy OR falls off world
-  → loseLife()
-    → Decrement lives
-    → Update UI
-    → Flash camera red
-    → IF lives > 0:
-        → showResurrectionScreen()
-          → Display overlay and text
-          → Ghost particles
-          → Wait 1.8s
-          → Respawn at checkpoint
-    → ELSE:
-        → Wait 1s
-        → Transition to GameOverScene
+  → Instant respawn at start position
+  → No lives system
+  → No game over
+  → Encourages experimentation with marshmallow form
 ```
 
 ### Victory Flow
@@ -475,32 +442,37 @@ Player overlaps goal
 3. Add to `levelData.enemies` with type property
 4. Handle in GameScene enemy creation
 
-### Adding Power-ups
+### Adding Power-ups or Collectibles
 1. Create power-up entity class
 2. Add to level data
 3. Create overlap detection in GameScene
 4. Implement effect on player
+5. Consider using object pooling for many collectibles
 
 ### Adding New Mechanics
 1. Add properties to Player class
 2. Implement logic in Player.update()
 3. Add UI elements if needed
 4. Update controls documentation
+5. Example: Marshmallow transformation demonstrates form-switching mechanic pattern
 
 ## Testing Strategy
 
 ### Manual Testing Checklist
-- [ ] Player movement feels responsive
-- [ ] Jump buffering works correctly
+- [ ] Player movement feels responsive in both forms
+- [ ] Marshmallow transformation works with E key
+- [ ] Marshmallow floats slowly when falling
+- [ ] Marshmallow cannot jump
+- [ ] Jump buffering works correctly in candy form
 - [ ] Enemies patrol correctly
-- [ ] Checkpoints save and respawn works
-- [ ] Lives system functions properly
 - [ ] Goal triggers victory
-- [ ] Fall-off triggers life loss
+- [ ] Fall-off triggers instant respawn
+- [ ] Enemy collision triggers instant respawn
 - [ ] Camera follows smoothly
-- [ ] UI stays fixed to viewport
 - [ ] Scene transitions work
 - [ ] Best time saves correctly
+- [ ] Shine sprite points toward moon (candy form only)
+- [ ] Transformation particle effects display correctly
 
 ### Performance Testing
 - Monitor FPS in browser dev tools

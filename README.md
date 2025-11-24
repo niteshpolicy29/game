@@ -5,9 +5,9 @@ A Halloween-themed 2D platformer game built with Phaser 3 where you control a ca
 ## Features
 
 - **Smooth Physics-Based Movement**: Realistic ball rolling with acceleration and friction
-- **Lives System**: 3 lives with checkpoint respawning
+- **Marshmallow Transformation**: Press E to transform into a floating marshmallow that descends slowly
 - **Enemy Hazards**: Cursed bats patrol platforms with deadly touch
-- **Checkpoint System**: Save progress at glowing lanterns throughout the level
+- **Challenging Level Design**: Navigate varied gaps and floating platforms across an 8000+ unit world
 - **Spooky Halloween Theme**: Dark night sky, haunted castle, glowing moon, and jack-o-lanterns
 - **Dynamic Camera**: Smooth following camera with world boundaries
 - **Victory & Game Over**: Unique scenes with thematic animations
@@ -19,6 +19,7 @@ A Halloween-themed 2D platformer game built with Phaser 3 where you control a ca
 
 - **Arrow Keys** or **WASD**: Move left/right
 - **Spacebar** or **Up Arrow** or **W**: Jump
+- **E**: Transform into marshmallow form (floats slowly but can't jump)
 - **M**: Return to menu (from game over/victory screens)
 
 ## Setup and Run
@@ -47,7 +48,7 @@ The game will open automatically in your browser (default: http://localhost:5173
 
 ## Game Objective
 
-Guide the candy ball through a haunted Halloween night to reach the trick-or-treat bag at the end. Avoid the cursed bats that patrol the platforms - their touch is deadly! Use checkpoints to save your progress. You have 3 lives to complete the journey.
+Guide the candy ball through a haunted Halloween night to reach the trick-or-treat bag at the end. Navigate across platforms and gaps, avoiding the cursed bats that patrol the level - their touch is deadly! Transform into marshmallow form to float slowly across large gaps. Complete the journey to collect your candy!
 
 ## Technical Details
 
@@ -125,17 +126,12 @@ Edit `src/data/levelData.js` to modify:
 
 ## Game Mechanics
 
-### Lives System
-- Start with 3 lives (hearts displayed in top-left)
-- Lose a life when touching enemies or falling off world
-- Respawn at last activated checkpoint
-- Game over when all lives are lost
-
-### Checkpoints
-- Glowing lanterns throughout the level
-- Activate by touching them
-- Lantern lights up when activated
-- Respawn here after losing a life
+### Marshmallow Transformation
+- Press **E** to toggle between candy ball and marshmallow form
+- **Candy Ball**: Normal movement, can jump, falls at normal speed
+- **Marshmallow**: Slower movement, cannot jump, floats down slowly (buoyancy effect)
+- Use marshmallow form to safely descend across large gaps
+- Transformation has particle effects (puffs for marshmallow, sparkles for candy)
 
 ### Enemies
 - Cursed bats patrol between defined points
@@ -145,9 +141,10 @@ Edit `src/data/levelData.js` to modify:
 
 ### Physics
 - Ball rolls realistically based on velocity
-- Shine effect always points toward moon
+- Shine effect always points toward moon (hidden in marshmallow form)
 - Jump buffering allows jump input slightly before landing
 - Friction system for smooth deceleration
+- Marshmallow has buoyancy that counteracts gravity when falling
 
 ## Browser Compatibility
 

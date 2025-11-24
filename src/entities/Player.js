@@ -23,7 +23,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const offset = (this.width - bodySize) / 2;
         this.body.setSize(bodySize, bodySize);
         this.body.setOffset(offset, offset);
-        this.body.setCollideWorldBounds(true);
+        this.body.setCollideWorldBounds(false); // Allow falling through gaps
         this.body.setMaxVelocity(PhysicsConfig.maxSpeed, 2400);
         this.body.setBounce(0); // No bounce to prevent sinking
         this.body.setDrag(50, 0); // Light drag for control
@@ -40,6 +40,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.landingTween = null; // Track active landing animation
         this.jumpBufferTime = 0; // Time when jump was pressed in air
         this.jumpBufferWindow = 150; // 150ms window for buffered jump
+        
+        // Marshmallow transformation state
+        this.isMarshmallow = false;
+        this.marshmallowMaxSpeed = 240; // Slower in marshmallow form
+        this.marshmallowAcceleration = 720; // Less responsive
+        this.createMarshmallowTexture();
     }
     
     createVisuals() {
@@ -89,7 +95,64 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.setScale(1);
     }
     
+    createMarshmallowTexture() {
+        if (this.scene.textures.exists('player-marshmallow')) return;
+        
+        const padding = this.glowWidth * 2;
+        const size = this.radius * 2 + padding;
+        const center = this.radius + this.glowWidth;
+        
+        const graphics = this.scene.make.graphics({ x: 0, y: 0 });
+        
+        // Marshmallow base - soft white with slight cream tint
+        graphics.fillStyle(0xfff8f0, 1);
+        graphics.fillCircle(center, center, this.radius);
+        
+        // Create pillowy, cylindrical marshmallow shape
+        // Top rounded edge
+        graphics.fillStyle(0xffffff, 1);
+        graphics.fillEllipse(center, center - this.radius * 0.3, this.radius * 0.85, this.radius * 0.4);
+        
+        // Middle section (main body)
+        graphics.fillStyle(0xfff5ee, 1);
+        graphics.fillRect(center - this.radius * 0.85, center - this.radius * 0.3, this.radius * 1.7, this.radius * 0.6);
+        
+        // Bottom rounded edge
+        graphics.fillStyle(0xf5e6d3, 1);
+        graphics.fillEllipse(center, center + this.radius * 0.3, this.radius * 0.85, this.radius * 0.4);
+        
+        // Add subtle vertical ridges for texture
+        graphics.lineStyle(2, 0xf0e6dc, 0.3);
+        for (let i = -2; i <= 2; i++) {
+            const x = center + (i * this.radius * 0.35);
+            graphics.beginPath();
+            graphics.moveTo(x, center - this.radius * 0.5);
+            graphics.lineTo(x, center + this.radius * 0.5);
+            graphics.strokePath();
+        }
+        
+        // Soft shadow on bottom
+        graphics.fillStyle(0xe8d5c0, 0.5);
+        graphics.fillEllipse(center, center + this.radius * 0.4, this.radius * 0.7, this.radius * 0.25);
+        
+        // Bright highlight on top for that glossy marshmallow look
+        graphics.fillStyle(0xffffff, 0.7);
+        graphics.fillEllipse(center - this.radius * 0.2, center - this.radius * 0.35, this.radius * 0.4, this.radius * 0.2);
+        
+        // Subtle outer glow
+        graphics.lineStyle(this.glowWidth, 0xfff8f0, 0.3);
+        graphics.strokeCircle(center, center, this.radius);
+        
+        graphics.generateTexture('player-marshmallow', size, size);
+        graphics.destroy();
+    }
+    
     update(cursors, keys) {
+        // Toggle marshmallow form with E key
+        if (Phaser.Input.Keyboard.JustDown(keys.E)) {
+            this.toggleMarshmallow();
+        }
+        
         // Horizontal movement with acceleration
         if (cursors.left.isDown || keys.A.isDown) {
             this.moveLeft();
@@ -100,18 +163,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.applyFriction();
         }
         
-        // Jump
-        if (Phaser.Input.Keyboard.JustDown(cursors.up) || 
-            Phaser.Input.Keyboard.JustDown(cursors.space) ||
-            Phaser.Input.Keyboard.JustDown(keys.W)) {
-            this.jump();
+        // Jump (only if not in marshmallow form)
+        if (!this.isMarshmallow) {
+            if (Phaser.Input.Keyboard.JustDown(cursors.up) || 
+                Phaser.Input.Keyboard.JustDown(cursors.space) ||
+                Phaser.Input.Keyboard.JustDown(keys.W)) {
+                this.jump();
+            }
         }
         
         // Update grounded state
         this.checkGrounded();
         
-        // Roll the ball based on horizontal velocity
+        // Roll the ball based on horizontal velocity (less rotation in marshmallow form)
         this.updateRoll();
+        
+        // Apply buoyancy if in marshmallow form
+        if (this.isMarshmallow) {
+            this.applyBuoyancy();
+        }
     }
     
     moveLeft() {
@@ -209,16 +279,109 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.shine.setScale(0.8);
     }
     
+    toggleMarshmallow() {
+        this.isMarshmallow = !this.isMarshmallow;
+        
+        if (this.isMarshmallow) {
+            // Transform to marshmallow
+            this.setTexture('player-marshmallow');
+            this.body.setMaxVelocity(this.marshmallowMaxSpeed, 2400);
+            
+            // Transformation effect
+            this.scene.tweens.add({
+                targets: this,
+                scaleX: 1.2,
+                scaleY: 0.8,
+                duration: 150,
+                yoyo: true,
+                ease: 'Sine.easeInOut'
+            });
+            
+            // Puff particles
+            for (let i = 0; i < 8; i++) {
+                const angle = (i * Math.PI * 2 / 8);
+                const particle = this.scene.add.circle(
+                    this.x + Math.cos(angle) * 30,
+                    this.y + Math.sin(angle) * 30,
+                    Phaser.Math.Between(4, 8),
+                    0xffffff,
+                    0.8
+                );
+                
+                this.scene.tweens.add({
+                    targets: particle,
+                    x: particle.x + Math.cos(angle) * 40,
+                    y: particle.y + Math.sin(angle) * 40,
+                    alpha: 0,
+                    scale: 0,
+                    duration: 500,
+                    ease: 'Sine.easeOut',
+                    onComplete: () => particle.destroy()
+                });
+            }
+        } else {
+            // Transform back to candy
+            this.setTexture('player-ball');
+            this.body.setMaxVelocity(this.maxSpeed, 2400);
+            
+            // Transformation effect
+            this.scene.tweens.add({
+                targets: this,
+                scaleX: 0.8,
+                scaleY: 1.2,
+                duration: 150,
+                yoyo: true,
+                ease: 'Sine.easeInOut'
+            });
+            
+            // Sparkle particles
+            for (let i = 0; i < 8; i++) {
+                const angle = (i * Math.PI * 2 / 8);
+                const particle = this.scene.add.circle(
+                    this.x + Math.cos(angle) * 30,
+                    this.y + Math.sin(angle) * 30,
+                    Phaser.Math.Between(3, 6),
+                    0xffaa00,
+                    0.9
+                );
+                
+                this.scene.tweens.add({
+                    targets: particle,
+                    x: particle.x + Math.cos(angle) * 40,
+                    y: particle.y + Math.sin(angle) * 40,
+                    alpha: 0,
+                    scale: 0,
+                    duration: 500,
+                    ease: 'Sine.easeOut',
+                    onComplete: () => particle.destroy()
+                });
+            }
+        }
+    }
+    
+    applyBuoyancy() {
+        // Marshmallow floats - reduce gravity effect when falling
+        if (this.body.velocity.y > 0) {
+            // Apply upward force to simulate buoyancy
+            const buoyancyForce = -400;
+            this.body.setAccelerationY(buoyancyForce);
+        } else {
+            this.body.setAccelerationY(0);
+        }
+    }
+    
     updateRoll() {
         // Calculate rotation based on horizontal velocity
         // The ball should roll in the direction of movement
         const velocityX = this.body.velocity.x;
         
         // Only rotate if moving significantly
+        // Marshmallow rotates slower (softer, squishier)
+        const rotationMultiplier = this.isMarshmallow ? 0.5 : 1.0;
         if (Math.abs(velocityX) > 10) {
             // Rotation speed proportional to velocity
             // Positive because moving right should rotate clockwise
-            const rotationSpeed = velocityX / (this.radius * 2);
+            const rotationSpeed = (velocityX / (this.radius * 2)) * rotationMultiplier;
             this.rotation += rotationSpeed * 0.016; // Assuming 60fps
         }
         
@@ -228,6 +391,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     
     updateShinePosition() {
         if (!this.shine) return;
+        
+        // Hide shine in marshmallow form (marshmallow is matte, not shiny)
+        if (this.isMarshmallow) {
+            this.shine.setAlpha(0);
+            return;
+        } else {
+            this.shine.setAlpha(1);
+        }
         
         // Calculate direction from ball to moon
         const dx = this.moonX - this.x;

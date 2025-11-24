@@ -48,7 +48,7 @@ export class MenuScene extends Phaser.Scene {
         const controls = this.add.text(
             this.cameras.main.centerX,
             this.cameras.main.centerY + 180,
-            'Arrow Keys or WASD to Move\nSPACE or UP to Jump',
+            'Arrow Keys or WASD to Move\nSPACE or UP to Jump\nE to Transform (Marshmallow floats!)',
             { fontSize: '24px', fill: '#666666', align: 'center' }
         );
         controls.setOrigin(0.5);
