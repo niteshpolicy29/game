@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GameConfig } from './config.js';
+import { TutorialScene } from './scenes/TutorialScene.js';
 import { BootScene } from './scenes/BootScene.js';
 import { MenuScene } from './scenes/MenuScene.js';
 import { GameScene } from './scenes/GameScene.js';
@@ -9,7 +10,7 @@ import { VictoryScene } from './scenes/VictoryScene.js';
 // Initialize game configuration with scenes
 const config = {
     ...GameConfig,
-    scene: [BootScene, MenuScene, GameScene, GameOverScene, VictoryScene]
+    scene: [TutorialScene, BootScene, MenuScene, GameScene, GameOverScene, VictoryScene]
 };
 
 // Create game instance

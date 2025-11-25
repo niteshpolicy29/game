@@ -41,11 +41,38 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.jumpBufferTime = 0; // Time when jump was pressed in air
         this.jumpBufferWindow = 150; // 150ms window for buffered jump
         
-        // Marshmallow transformation state
-        this.isMarshmallow = false;
-        this.marshmallowMaxSpeed = 240; // Slower in marshmallow form
-        this.marshmallowAcceleration = 720; // Less responsive
+        // Form transformation state
+        this.currentForm = 'candy'; // 'candy', 'marshmallow', 'jelly'
+        this.isMarshmallow = false; // Keep for backward compatibility
+        this.isJelly = false;
+        
+        // Form-specific properties
+        this.marshmallowMaxSpeed = 240;
+        this.marshmallowAcceleration = 720;
+        this.jellyMaxSpeed = 280; // Much slower horizontal movement for floaty feel
+        this.jellyAcceleration = 840; // Slower acceleration
+        this.jellyJumpVelocity = -1300; // Much higher jump for bouncy feel
+        this.jellyIdleHopVelocity = -500; // Small automatic hops
+        this.jellyBounce = 0.5; // Very bouncy!
+        this.jellyHopTimer = 0; // Timer for automatic hops
+        this.jellyHopInterval = 800; // Hop every 800ms when idle
+        this.jellyFastFalling = false; // Track if fast-falling to ground
+        
+        // Water physics state
+        this.waterBobPhase = 0; // For bobbing animation
+        this.waterBobSpeed = 0.02; // Slower, more gentle bobbing
+        this.waterVerticalVelocity = 0; // Track water-specific velocity for smooth transitions
+        this.waterDipAmount = 0; // Current dip depth from landing
+        this.waterDipRecovery = 0; // Recovery animation progress
+        this.inWater = false;
+        this.justEnteredWater = false;
+        this.waterEntryVelocity = 0; // Track entry speed for splash intensity
+        
         this.createMarshmallowTexture();
+        this.createJellyTexture();
+        
+        // Death state
+        this.isDead = false;
     }
     
     createVisuals() {
@@ -147,7 +174,57 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         graphics.destroy();
     }
     
+    createJellyTexture() {
+        if (this.scene.textures.exists('player-jelly')) return;
+        
+        const padding = this.glowWidth * 2;
+        const size = this.radius * 2 + padding;
+        const center = this.radius + this.glowWidth;
+        
+        const graphics = this.scene.make.graphics({ x: 0, y: 0 });
+        
+        // Jelly base - translucent green/lime color
+        graphics.fillStyle(0x44ff44, 0.85);
+        graphics.fillCircle(center, center, this.radius);
+        
+        // Inner lighter core for translucent effect
+        graphics.fillStyle(0x88ff88, 0.6);
+        graphics.fillCircle(center, center, this.radius * 0.7);
+        
+        // Glossy highlights for jelly shine
+        graphics.fillStyle(0xccffcc, 0.8);
+        graphics.fillCircle(center - this.radius * 0.3, center - this.radius * 0.3, this.radius * 0.3);
+        
+        graphics.fillStyle(0xffffff, 0.6);
+        graphics.fillCircle(center - this.radius * 0.35, center - this.radius * 0.35, this.radius * 0.15);
+        
+        // Secondary shine
+        graphics.fillStyle(0xccffcc, 0.5);
+        graphics.fillCircle(center + this.radius * 0.4, center + this.radius * 0.2, this.radius * 0.2);
+        
+        // Darker bottom for depth
+        graphics.fillStyle(0x22aa22, 0.4);
+        graphics.fillEllipse(center, center + this.radius * 0.4, this.radius * 0.8, this.radius * 0.3);
+        
+        // Glowing outline
+        graphics.lineStyle(this.glowWidth, 0x44ff44, 0.5);
+        graphics.strokeCircle(center, center, this.radius);
+        
+        graphics.generateTexture('player-jelly', size, size);
+        graphics.destroy();
+    }
+    
     update(cursors, keys) {
+        // Don't process input if dead
+        if (this.isDead) {
+            return;
+        }
+        
+        // Toggle jelly form with Q key
+        if (Phaser.Input.Keyboard.JustDown(keys.Q)) {
+            this.toggleJelly();
+        }
+        
         // Toggle marshmallow form with E key
         if (Phaser.Input.Keyboard.JustDown(keys.E)) {
             this.toggleMarshmallow();
@@ -164,7 +241,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
         
         // Jump (only if not in marshmallow form)
-        if (!this.isMarshmallow) {
+        if (this.currentForm !== 'marshmallow') {
             if (Phaser.Input.Keyboard.JustDown(cursors.up) || 
                 Phaser.Input.Keyboard.JustDown(cursors.space) ||
                 Phaser.Input.Keyboard.JustDown(keys.W)) {
@@ -175,21 +252,50 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // Update grounded state
         this.checkGrounded();
         
-        // Roll the ball based on horizontal velocity (less rotation in marshmallow form)
+        // Roll the ball based on horizontal velocity
         this.updateRoll();
         
-        // Apply buoyancy if in marshmallow form
-        if (this.isMarshmallow) {
+        // Apply form-specific physics
+        if (this.currentForm === 'marshmallow') {
             this.applyBuoyancy();
+        } else if (this.currentForm === 'jelly') {
+            if (!this.isGrounded) {
+                // Check if fast-falling
+                if (this.jellyFastFalling) {
+                    this.applyJellyFastFall();
+                } else {
+                    // Jelly floats more in the air - reduced gravity effect
+                    this.applyJellyFloat();
+                }
+            } else {
+                // Clear fast-fall state when grounded
+                this.jellyFastFalling = false;
+                // Automatic idle hopping when grounded
+                this.updateJellyIdleHop();
+            }
         }
     }
     
     moveLeft() {
-        this.body.setAccelerationX(-this.acceleration);
+        const accel = this.getCurrentAcceleration();
+        this.body.setAccelerationX(-accel);
     }
     
     moveRight() {
-        this.body.setAccelerationX(this.acceleration);
+        const accel = this.getCurrentAcceleration();
+        this.body.setAccelerationX(accel);
+    }
+    
+    getCurrentAcceleration() {
+        if (this.currentForm === 'marshmallow') return this.marshmallowAcceleration;
+        if (this.currentForm === 'jelly') return this.jellyAcceleration;
+        return this.acceleration;
+    }
+    
+    getCurrentMaxSpeed() {
+        if (this.currentForm === 'marshmallow') return this.marshmallowMaxSpeed;
+        if (this.currentForm === 'jelly') return this.jellyMaxSpeed;
+        return this.maxSpeed;
     }
     
     applyFriction() {
@@ -207,15 +313,50 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     
     jump() {
-        // Allow jump immediately when touching ground
-        if (this.body.touching.down || this.body.blocked.down) {
-            this.body.setVelocityY(this.jumpVelocity);
-            this.isGrounded = false;
-            this.wasAirborne = true;
-            this.jumpBufferTime = 0; // Clear buffer
+        // For jelly form, handle fast-fall and jump
+        if (this.currentForm === 'jelly') {
+            const isActuallyGrounded = this.body.touching.down || this.body.blocked.down;
+            const isVeryCloseToGround = this.body.velocity.y > -100 && this.body.velocity.y < 50;
+            
+            if (isActuallyGrounded || (isVeryCloseToGround && this.isGrounded)) {
+                // Manual jump - much higher
+                this.body.setVelocityY(this.jellyJumpVelocity);
+                this.isGrounded = false;
+                this.wasAirborne = true;
+                this.jumpBufferTime = 0;
+                this.jellyHopTimer = Date.now(); // Reset hop timer
+                this.jellyFastFalling = false; // Clear fast-fall state
+                
+                // Enhanced squish effect for manual jump
+                this.scene.tweens.add({
+                    targets: this,
+                    scaleX: 0.7,
+                    scaleY: 1.4,
+                    duration: 150,
+                    yoyo: true,
+                    ease: 'Back.easeOut'
+                });
+            } else if (!isActuallyGrounded) {
+                // In the air - trigger fast-fall and buffer jump
+                this.jellyFastFalling = true;
+                this.jumpBufferTime = Date.now();
+                
+                // Cancel upward velocity and start falling fast
+                if (this.body.velocity.y < 0) {
+                    this.body.setVelocityY(0);
+                }
+            }
         } else {
-            // Buffer the jump input if in air
-            this.jumpBufferTime = Date.now();
+            // Normal jump for other forms
+            if (this.body.touching.down || this.body.blocked.down) {
+                this.body.setVelocityY(this.jumpVelocity);
+                this.isGrounded = false;
+                this.wasAirborne = true;
+                this.jumpBufferTime = 0;
+            } else {
+                // Buffer the jump input if in air
+                this.jumpBufferTime = Date.now();
+            }
         }
     }
     
@@ -230,10 +371,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.isGrounded && this.jumpBufferTime > 0) {
             const timeSinceJumpPress = Date.now() - this.jumpBufferTime;
             if (timeSinceJumpPress < this.jumpBufferWindow) {
-                // Execute buffered jump
-                this.body.setVelocityY(this.jumpVelocity);
+                // Execute buffered jump immediately
+                const jumpVel = this.currentForm === 'jelly' ? this.jellyJumpVelocity : this.jumpVelocity;
+                this.body.setVelocityY(jumpVel);
                 this.jumpBufferTime = 0;
                 this.wasAirborne = true;
+                
+                // Reset hop timer for jelly
+                if (this.currentForm === 'jelly') {
+                    this.jellyHopTimer = Date.now();
+                }
                 return; // Skip landing animation
             } else {
                 this.jumpBufferTime = 0; // Clear expired buffer
@@ -249,6 +396,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.wasAirborne = true;
         } else {
             this.wasAirborne = false;
+        }
+    }
+    
+    onLanding(impactVelocity) {
+        // Jelly bounces and squishes on landing - more dramatic
+        if (this.currentForm === 'jelly') {
+            // Enhanced squish animation with multiple bounces
+            this.scene.tweens.add({
+                targets: this,
+                scaleX: 1.4,
+                scaleY: 0.6,
+                duration: 120,
+                yoyo: true,
+                repeat: 1,
+                ease: 'Bounce.easeOut'
+            });
+        } else {
+            // Ensure scale is reset for other forms
+            this.setScale(1, 1);
         }
     }
     
@@ -279,83 +445,88 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.shine.setScale(0.8);
     }
     
-    toggleMarshmallow() {
-        this.isMarshmallow = !this.isMarshmallow;
+    transformTo(form) {
+        const oldForm = this.currentForm;
+        this.currentForm = form;
         
-        if (this.isMarshmallow) {
-            // Transform to marshmallow
-            this.setTexture('player-marshmallow');
-            this.body.setMaxVelocity(this.marshmallowMaxSpeed, 2400);
-            
-            // Transformation effect
-            this.scene.tweens.add({
-                targets: this,
-                scaleX: 1.2,
-                scaleY: 0.8,
-                duration: 150,
-                yoyo: true,
-                ease: 'Sine.easeInOut'
-            });
-            
-            // Puff particles
-            for (let i = 0; i < 8; i++) {
-                const angle = (i * Math.PI * 2 / 8);
-                const particle = this.scene.add.circle(
-                    this.x + Math.cos(angle) * 30,
-                    this.y + Math.sin(angle) * 30,
-                    Phaser.Math.Between(4, 8),
-                    0xffffff,
-                    0.8
-                );
-                
-                this.scene.tweens.add({
-                    targets: particle,
-                    x: particle.x + Math.cos(angle) * 40,
-                    y: particle.y + Math.sin(angle) * 40,
-                    alpha: 0,
-                    scale: 0,
-                    duration: 500,
-                    ease: 'Sine.easeOut',
-                    onComplete: () => particle.destroy()
-                });
-            }
-        } else {
-            // Transform back to candy
+        // Update backward compatibility flags
+        this.isMarshmallow = (form === 'marshmallow');
+        this.isJelly = (form === 'jelly');
+        
+        // Set texture and physics
+        if (form === 'candy') {
             this.setTexture('player-ball');
             this.body.setMaxVelocity(this.maxSpeed, 2400);
+            this.body.setBounce(0);
+        } else if (form === 'marshmallow') {
+            this.setTexture('player-marshmallow');
+            this.body.setMaxVelocity(this.marshmallowMaxSpeed, 2400);
+            this.body.setBounce(0);
+        } else if (form === 'jelly') {
+            this.setTexture('player-jelly');
+            this.body.setMaxVelocity(this.jellyMaxSpeed, 2400);
+            this.body.setBounce(this.jellyBounce);
+            // Reset hop timer when transforming to jelly
+            this.jellyHopTimer = Date.now();
+        }
+        
+        // Transformation animation
+        this.scene.tweens.add({
+            targets: this,
+            scaleX: 1.2,
+            scaleY: 0.8,
+            duration: 150,
+            yoyo: true,
+            ease: 'Sine.easeInOut'
+        });
+        
+        // Particles based on new form
+        const particleColor = form === 'candy' ? 0xffaa00 : 
+                             form === 'marshmallow' ? 0xffffff : 
+                             0x44ff44;
+        
+        for (let i = 0; i < 10; i++) {
+            const angle = (i * Math.PI * 2 / 10);
+            const particle = this.scene.add.circle(
+                this.x + Math.cos(angle) * 30,
+                this.y + Math.sin(angle) * 30,
+                Phaser.Math.Between(4, 8),
+                particleColor,
+                0.8
+            );
             
-            // Transformation effect
             this.scene.tweens.add({
-                targets: this,
-                scaleX: 0.8,
-                scaleY: 1.2,
-                duration: 150,
-                yoyo: true,
-                ease: 'Sine.easeInOut'
+                targets: particle,
+                x: particle.x + Math.cos(angle) * 40,
+                y: particle.y + Math.sin(angle) * 40,
+                alpha: 0,
+                scale: 0,
+                duration: 500,
+                ease: 'Sine.easeOut',
+                onComplete: () => particle.destroy()
             });
-            
-            // Sparkle particles
-            for (let i = 0; i < 8; i++) {
-                const angle = (i * Math.PI * 2 / 8);
-                const particle = this.scene.add.circle(
-                    this.x + Math.cos(angle) * 30,
-                    this.y + Math.sin(angle) * 30,
-                    Phaser.Math.Between(3, 6),
-                    0xffaa00,
-                    0.9
-                );
-                
-                this.scene.tweens.add({
-                    targets: particle,
-                    x: particle.x + Math.cos(angle) * 40,
-                    y: particle.y + Math.sin(angle) * 40,
-                    alpha: 0,
-                    scale: 0,
-                    duration: 500,
-                    ease: 'Sine.easeOut',
-                    onComplete: () => particle.destroy()
-                });
-            }
+        }
+    }
+    
+    toggleMarshmallow() {
+        // E key: Toggle marshmallow form
+        // If marshmallow, go back to candy
+        // If candy or jelly, transform to marshmallow
+        if (this.currentForm === 'marshmallow') {
+            this.transformTo('candy');
+        } else {
+            this.transformTo('marshmallow');
+        }
+    }
+    
+    toggleJelly() {
+        // Q key: Toggle jelly form
+        // If jelly, go back to candy
+        // If candy or marshmallow, transform to jelly
+        if (this.currentForm === 'jelly') {
+            this.transformTo('candy');
+        } else {
+            this.transformTo('jelly');
         }
     }
     
@@ -370,30 +541,69 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
     
+    applyJellyFloat() {
+        // Jelly has reduced gravity for floaty feel
+        // Apply upward force to counteract some gravity
+        const floatForce = -600; // Reduces effective gravity
+        this.body.setAccelerationY(floatForce);
+    }
+    
+    applyJellyFastFall() {
+        // Fast-fall to ground when jump pressed during auto-hop
+        // Apply strong downward force
+        const fastFallForce = 1200; // Extra downward acceleration
+        this.body.setAccelerationY(fastFallForce);
+        
+        // Ensure falling velocity
+        if (this.body.velocity.y < 200) {
+            this.body.setVelocityY(200);
+        }
+    }
+    
+    updateJellyIdleHop() {
+        // Automatic small hops when in jelly form and grounded
+        const currentTime = Date.now();
+        
+        if (currentTime - this.jellyHopTimer > this.jellyHopInterval) {
+            // Perform small idle hop
+            this.body.setVelocityY(this.jellyIdleHopVelocity);
+            this.jellyHopTimer = currentTime;
+            
+            // Small squish animation for idle hop
+            this.scene.tweens.add({
+                targets: this,
+                scaleX: 0.9,
+                scaleY: 1.15,
+                duration: 100,
+                yoyo: true,
+                ease: 'Sine.easeOut'
+            });
+        }
+    }
+    
     updateRoll() {
         // Calculate rotation based on horizontal velocity
-        // The ball should roll in the direction of movement
         const velocityX = this.body.velocity.x;
         
-        // Only rotate if moving significantly
-        // Marshmallow rotates slower (softer, squishier)
-        const rotationMultiplier = this.isMarshmallow ? 0.5 : 1.0;
+        // Rotation multiplier based on form
+        let rotationMultiplier = 1.0;
+        if (this.currentForm === 'marshmallow') rotationMultiplier = 0.5;
+        if (this.currentForm === 'jelly') rotationMultiplier = 0.7;
+        
         if (Math.abs(velocityX) > 10) {
-            // Rotation speed proportional to velocity
-            // Positive because moving right should rotate clockwise
             const rotationSpeed = (velocityX / (this.radius * 2)) * rotationMultiplier;
-            this.rotation += rotationSpeed * 0.016; // Assuming 60fps
+            this.rotation += rotationSpeed * 0.016;
         }
         
-        // Update shine position to always point toward moon
+        // Update shine position
         this.updateShinePosition();
     }
     
     updateShinePosition() {
         if (!this.shine) return;
         
-        // Hide shine in marshmallow form (marshmallow is matte, not shiny)
-        if (this.isMarshmallow) {
+        // Show shine only for candy and jelly (both are shiny)
+        if (this.currentForm === 'marshmallow') {
             this.shine.setAlpha(0);
             return;
         } else {

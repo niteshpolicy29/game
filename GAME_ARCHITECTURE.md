@@ -4,7 +4,12 @@
 
 Haunted Pumpkin is a 2D physics-based platformer built with Phaser 3. The architecture follows a scene-based structure with clear separation between game logic, rendering, and state management. The game uses Arcade Physics for collision detection and movement, with custom entity classes extending Phaser's built-in types.
 
-The game features a unique marshmallow transformation mechanic where the player can toggle between a candy ball (normal physics) and a marshmallow form (buoyant, slow-falling) to navigate challenging platforming sections with varied gap sizes.
+The game features a unique triple-form transformation system where the player can switch between three distinct forms:
+- **Candy Ball**: Standard platforming with normal physics
+- **Marshmallow**: Buoyant floating with water physics
+- **Jelly**: Bouncy movement with auto-hops and fast-fall mechanics
+
+Each form has unique physics properties, visual appearance, and death animations, enabling creative level design with varied gap sizes and water crossings.
 
 ## System Architecture
 
@@ -137,42 +142,81 @@ Central configuration for all game constants and Phaser settings.
 **Visual Features:**
 - Candy ball with orange/yellow spiral stripes
 - Marshmallow form with soft white pillowy texture
+- Jelly form with translucent green appearance and glossy highlights
 - Dynamic shine sprite that points toward moon (hidden in marshmallow form)
-- Rolling animation based on velocity
+- Rolling animation based on velocity (form-specific speed)
 - Glow outline effect
-- Transformation particle effects
+- Transformation particle effects (sparkles for candy, puffs for marshmallow, green particles for jelly)
+- Form-specific death animations
 
 **Physics Properties:**
 ```javascript
 {
   radius: 48,
-  maxSpeed: 480,              // Candy ball
-  marshmallowMaxSpeed: 240,   // Marshmallow (slower)
-  acceleration: 1440,         // Candy ball
-  marshmallowAcceleration: 720, // Marshmallow (less responsive)
-  friction: 720,
+  
+  // Candy Ball (default)
+  maxSpeed: 480,
+  acceleration: 1440,
   jumpVelocity: -960,
+  
+  // Marshmallow Form
+  marshmallowMaxSpeed: 240,        // Half speed
+  marshmallowAcceleration: 720,    // Half acceleration
+  buoyancyForce: -400,             // Upward force when falling
+  
+  // Jelly Form
+  jellyMaxSpeed: 280,              // Slow horizontal
+  jellyAcceleration: 840,          // Moderate acceleration
+  jellyJumpVelocity: -1300,        // Very high jumps
+  jellyIdleHopVelocity: -500,      // Automatic small hops
+  jellyBounce: 0.5,                // Bouncy physics
+  jellyHopInterval: 800ms,         // Auto-hop frequency
+  
+  // Universal
+  friction: 720,
   jumpBufferWindow: 150ms,
-  buoyancyForce: -400         // Upward force in marshmallow form
+  
+  // Water Physics (marshmallow only)
+  waterBobSpeed: 0.02,             // Gentle bobbing
+  waterDrag: 180+,                 // Increases with speed
 }
 ```
 
 **Key Methods:**
 - `createVisuals()`: Generates candy ball texture with stripes and glow
 - `createMarshmallowTexture()`: Generates marshmallow texture with pillowy appearance
+- `createJellyTexture()`: Generates translucent jelly texture with glossy highlights
 - `createShine()`: Creates separate shine sprite
 - `update(cursors, keys)`: Main update loop for input and movement
-- `toggleMarshmallow()`: Switch between candy and marshmallow forms with particle effects
+- `transformTo(form)`: Switch between forms ('candy', 'marshmallow', 'jelly') with particle effects
+- `toggleMarshmallow()`: Toggle marshmallow form (E key)
+- `toggleJelly()`: Toggle jelly form (Q key)
 - `moveLeft()` / `moveRight()`: Apply horizontal acceleration (speed varies by form)
 - `applyFriction()`: Smooth deceleration when no input
 - `applyBuoyancy()`: Apply upward force when falling in marshmallow form
-- `jump()`: Apply jump velocity with buffering (disabled in marshmallow form)
+- `applyJellyFloat()`: Reduced gravity for floaty jelly physics
+- `applyJellyFastFall()`: Strong downward force when fast-falling
+- `updateJellyIdleHop()`: Automatic small hops when grounded in jelly form
+- `jump()`: Apply jump velocity with buffering (form-specific behavior)
 - `checkGrounded()`: Update grounded state and handle buffered jumps
-- `updateRoll()`: Rotate ball based on velocity (slower in marshmallow form)
+- `onLanding()`: Handle landing animations (squish for jelly)
+- `updateRoll()`: Rotate ball based on velocity (form-specific speed)
 - `updateShinePosition()`: Position shine toward moon (hidden in marshmallow form)
 
 **Jump Buffering:**
 If jump is pressed while airborne, it's buffered for 150ms. If the player lands within that window, the jump executes immediately, creating responsive controls.
+
+**Jelly Fast-Fall:**
+In jelly form, pressing jump while airborne triggers fast-fall mode. The jelly drops quickly to the ground, and if jump is buffered, it executes immediately on landing for quick bounces.
+
+**Water Physics (Marshmallow):**
+When marshmallow enters water, realistic physics apply:
+- Entry splash based on velocity
+- Dip and recovery animation
+- Gentle sinusoidal bobbing (6 pixel amplitude)
+- Movement creates turbulence (faster bobbing)
+- Can climb out at water edges with upward boost
+- Increased drag for realistic resistance
 
 #### PlatformManager (src/entities/PlatformManager.js)
 
@@ -267,12 +311,17 @@ If jump is pressed while airborne, it's buffered for 150ms. If the player lands 
 
 **Current Level:**
 - World size: 8220x1080
-- No checkpoints - continuous challenge
-- 8 enemies with varied patrol routes
-- 30+ platforms creating platforming challenges
-- Ground divided into segments with varied gap sizes (small, medium, large, huge)
-- 2 water areas marked for visual distinction
-- Floating platforms over gaps requiring precise jumps or marshmallow transformation
+- No checkpoints - continuous challenge (3 lives system)
+- 6 enemies with varied patrol routes
+- 20+ platforms creating platforming challenges
+- Ground divided into segments with varied gap sizes:
+  - Small gap: 280 units (easy jump)
+  - Medium gap: 520 units (requires marshmallow or precise platforming)
+  - Large gap: 850 units (marshmallow recommended)
+  - Huge gap: 980 units (marshmallow or jelly required)
+- 2 water areas (850 and 560 units wide) requiring marshmallow form
+- Floating platforms over gaps offering risky alternatives
+- Strategic enemy placement forces form switching decisions
 
 ### 5. Input System
 
@@ -304,7 +353,28 @@ If jump is pressed while airborne, it's buffered for 150ms. If the player lands 
 
 ### 7. Lives System
 
-**Note**: The lives system has been removed from the current implementation. Players now have unlimited attempts, with instant respawn at the start position when falling off the world or hitting enemies. This creates a more forgiving, exploration-focused experience where players can experiment with the marshmallow transformation mechanic without penalty.
+**Implementation**: Players start with 3 lives displayed as hearts in the top-left corner.
+
+**Death Triggers:**
+- Falling below world boundary (y > 1080)
+- Collision with enemy bats
+
+**Death Flow:**
+1. Life counter decrements
+2. Form-specific death animation plays:
+   - **Candy**: Breaks into colored particles
+   - **Marshmallow**: Burns dark, crumbles into ash with smoke
+   - **Jelly**: Splats and dissolves
+3. Spooky ghost marker floats up
+4. Death screen displays with lives remaining
+5. Player respawns at start position in candy form
+6. If lives reach 0, transition to GameOverScene
+
+**Respawn:**
+- Instant respawn at start position (no checkpoints in current level)
+- Always respawn in candy form
+- Full control restored immediately
+- Camera resumes following
 
 ### 8. Collision System
 
@@ -407,10 +477,27 @@ GameScene.update() [60 FPS]
 ### Death and Respawn Flow
 ```
 Player touches enemy OR falls off world
-  → Instant respawn at start position
-  → No lives system
-  → No game over
-  → Encourages experimentation with marshmallow form
+  → handleDeath()
+    → Decrement lives counter
+    → Disable player controls
+    → Camera flash effect
+    → Play form-specific death animation:
+      - candyBreak(): Particle explosion
+      - marshmallowExpire(): Burn and crumble
+      - jellyDeath(): Splat and dissolve
+    → Create floating ghost marker
+    → Show death screen (2 seconds)
+      → Display "YOU DIED"
+      → Show lives remaining
+      → "Respawning..." message
+    → If lives > 0:
+      → respawnPlayer()
+        → Reset position to start
+        → Transform to candy form
+        → Restore controls
+        → Resume camera following
+    → If lives == 0:
+      → Transition to GameOverScene
 ```
 
 ### Victory Flow
@@ -459,19 +546,29 @@ Player overlaps goal
 ## Testing Strategy
 
 ### Manual Testing Checklist
-- [ ] Player movement feels responsive in both forms
+- [ ] Player movement feels responsive in all three forms
 - [ ] Marshmallow transformation works with E key
+- [ ] Jelly transformation works with Q key
 - [ ] Marshmallow floats slowly when falling
 - [ ] Marshmallow cannot jump
-- [ ] Jump buffering works correctly in candy form
+- [ ] Jelly auto-hops when idle
+- [ ] Jelly fast-fall works (jump in air)
+- [ ] Jelly has high jumps and bouncy landing
+- [ ] Water physics work correctly (marshmallow only)
+- [ ] Water entry creates splash
+- [ ] Marshmallow bobs on water surface
+- [ ] Can climb out of water at edges
+- [ ] Jump buffering works correctly
 - [ ] Enemies patrol correctly
 - [ ] Goal triggers victory
-- [ ] Fall-off triggers instant respawn
-- [ ] Enemy collision triggers instant respawn
+- [ ] Fall-off triggers death and respawn
+- [ ] Enemy collision triggers death and respawn
+- [ ] Lives system works (3 lives, game over at 0)
+- [ ] Form-specific death animations play
 - [ ] Camera follows smoothly
 - [ ] Scene transitions work
 - [ ] Best time saves correctly
-- [ ] Shine sprite points toward moon (candy form only)
+- [ ] Shine sprite points toward moon (candy and jelly only)
 - [ ] Transformation particle effects display correctly
 
 ### Performance Testing

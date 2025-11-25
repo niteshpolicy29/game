@@ -143,22 +143,33 @@ if (this.enemies && this.enemies.children) {
 
 #### Form-Specific Physics
 
-Player applies different physics based on form:
+Player applies different physics based on current form:
 
 ```javascript
 // Player.js
-if (this.isMarshmallow) {
+if (this.currentForm === 'marshmallow') {
     this.applyBuoyancy();
     // No jump allowed
+} else if (this.currentForm === 'jelly') {
+    if (!this.isGrounded) {
+        if (this.jellyFastFalling) {
+            this.applyJellyFastFall();
+        } else {
+            this.applyJellyFloat();
+        }
+    } else {
+        this.updateJellyIdleHop();
+    }
 } else {
-    // Normal jump mechanics
+    // Normal candy ball mechanics
 }
 ```
 
 **Benefits:**
-- Only calculate buoyancy when needed
+- Only calculate form-specific physics when needed
 - Cleaner conditional logic
 - Easy to extend with more forms
+- Minimal overhead for form switching
 
 #### Efficient State Checks
 
@@ -395,11 +406,16 @@ if (!this.scene.cameras.main.worldView.contains(this.x, this.y)) {
 
 **Symptom**: Memory usage increases during gameplay
 
-**Solution**: Ensure particle cleanup
+**Solution**: Ensure particle cleanup and texture reuse
 
 ```javascript
 // Always destroy particles after animation
 onComplete: () => particle.destroy()
+
+// Reuse textures for multiple forms
+if (!this.scene.textures.exists('player-marshmallow')) {
+    this.createMarshmallowTexture();
+}
 ```
 
 ### Issue: Slow Scene Transitions
@@ -562,11 +578,13 @@ export default {
 The game is well-optimized for 60 FPS gameplay on modern hardware. Key optimizations include:
 
 1. Static physics bodies for platforms
-2. Texture caching and reuse (candy ball, marshmallow, enemies)
+2. Texture caching and reuse (candy ball, marshmallow, jelly, enemies)
 3. Efficient collision detection
 4. Tween-based animations
 5. Proper memory cleanup
-6. Conditional physics (buoyancy only in marshmallow form)
-7. Particle cleanup after transformation effects
+6. Conditional physics (form-specific calculations only when needed)
+7. Particle cleanup after transformation and death effects
+8. Water physics only calculated when marshmallow is in water
+9. Form-specific death animations with proper cleanup
 
-Performance is stable across the 8220-unit world with 8 enemies and 30+ platforms. The marshmallow transformation mechanic adds minimal overhead due to conditional physics application. Room for future enhancements like object pooling and sprite atlases if needed for larger levels or more complex gameplay.
+Performance is stable across the 8220-unit world with 6 enemies and 20+ platforms. The triple-form transformation system adds minimal overhead due to conditional physics application. Water physics for marshmallow form are efficiently calculated only when needed. Room for future enhancements like object pooling and sprite atlases if needed for larger levels or more complex gameplay.

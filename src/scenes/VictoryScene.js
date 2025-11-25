@@ -36,12 +36,12 @@ export class VictoryScene extends Phaser.Scene {
         );
         timeText.setOrigin(0.5);
         
-        // Restart instructions
+        // Restart instructions - positioned at bottom
         const restartText = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY + 120,
+            this.cameras.main.height - 120,
             'Press SPACE to Play Again',
-            { fontSize: '28px', fill: '#00ff00' }
+            { fontSize: '32px', fill: '#00ff00', fontStyle: 'bold' }
         );
         restartText.setOrigin(0.5);
         
@@ -55,12 +55,12 @@ export class VictoryScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
         
-        // Menu option
+        // Menu option - clearly positioned at bottom
         const menuText = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY + 180,
+            this.cameras.main.height - 60,
             'Press M for Menu',
-            { fontSize: '24px', fill: '#666666' }
+            { fontSize: '28px', fill: '#aaaaaa', fontStyle: 'bold' }
         );
         menuText.setOrigin(0.5);
         

@@ -41,9 +41,9 @@ export class GameOverScene extends Phaser.Scene {
         // Restart instructions
         const restartText = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY + 200,
+            this.cameras.main.height - 120,
             'Press SPACE to Try Again',
-            { fontSize: '36px', fill: '#ff6600' }
+            { fontSize: '36px', fill: '#ff6600', fontStyle: 'bold' }
         );
         restartText.setOrigin(0.5);
         
@@ -57,12 +57,12 @@ export class GameOverScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
         
-        // Menu option
+        // Menu option - positioned clearly at bottom
         const menuText = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY + 120,
+            this.cameras.main.height - 60,
             'Press M for Menu',
-            { fontSize: '24px', fill: '#666666' }
+            { fontSize: '28px', fill: '#aaaaaa', fontStyle: 'bold' }
         );
         menuText.setOrigin(0.5);
         

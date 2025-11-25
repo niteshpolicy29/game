@@ -4,22 +4,27 @@ A Halloween-themed 2D platformer game built with Phaser 3 where you control a ca
 
 ## Features
 
-- **Smooth Physics-Based Movement**: Realistic ball rolling with acceleration and friction
-- **Marshmallow Transformation**: Press E to transform into a floating marshmallow that descends slowly
+- **Triple Form System**: Switch between three unique forms with distinct physics
+  - **Candy Ball**: Normal movement, can jump, standard physics
+  - **Marshmallow**: Slow floating descent, cannot jump, water physics
+  - **Jelly**: Bouncy with automatic idle hops, fast-fall mechanic, floaty air physics
+- **Water Physics**: Marshmallow form floats on water with realistic bobbing and splash effects
 - **Enemy Hazards**: Cursed bats patrol platforms with deadly touch
-- **Challenging Level Design**: Navigate varied gaps and floating platforms across an 8000+ unit world
-- **Spooky Halloween Theme**: Dark night sky, haunted castle, glowing moon, and jack-o-lanterns
+- **Challenging Level Design**: Navigate varied gaps (small, medium, large, huge) across an 8220-unit world
+- **Spooky Halloween Theme**: Purple night sky, haunted castle, glowing moon, spooky trees with faces
+- **Lives System**: 3 lives with instant respawn and form-specific death animations
 - **Dynamic Camera**: Smooth following camera with world boundaries
 - **Victory & Game Over**: Unique scenes with thematic animations
 - **Completion Time Tracking**: Best time saved to localStorage
 - **Jump Buffering**: Responsive jump input with 150ms buffer window
-- **Visual Polish**: Rolling animation, dynamic shine effects, particle systems
+- **Visual Polish**: Rolling animation, dynamic shine effects, particle systems, procedural textures
 
 ## Controls
 
 - **Arrow Keys** or **WASD**: Move left/right
-- **Spacebar** or **Up Arrow** or **W**: Jump
-- **E**: Transform into marshmallow form (floats slowly but can't jump)
+- **Spacebar** or **Up Arrow** or **W**: Jump (not available in marshmallow form)
+- **E**: Toggle marshmallow form (floats slowly, cannot jump, water physics)
+- **Q**: Toggle jelly form (bouncy, auto-hops, fast-fall with jump in air)
 - **M**: Return to menu (from game over/victory screens)
 
 ## Setup and Run
@@ -48,7 +53,14 @@ The game will open automatically in your browser (default: http://localhost:5173
 
 ## Game Objective
 
-Guide the candy ball through a haunted Halloween night to reach the trick-or-treat bag at the end. Navigate across platforms and gaps, avoiding the cursed bats that patrol the level - their touch is deadly! Transform into marshmallow form to float slowly across large gaps. Complete the journey to collect your candy!
+Guide the candy ball through a haunted Halloween night to reach the trick-or-treat bag at the end. Navigate across platforms and gaps, avoiding the cursed bats that patrol the level - their touch is deadly! 
+
+**Form Strategy:**
+- **Candy Ball**: Best for precise platforming and jumping
+- **Marshmallow**: Float slowly down large gaps and across water areas
+- **Jelly**: Bouncy movement with high jumps, use fast-fall (jump in air) to quickly reach ground
+
+You have 3 lives - use them wisely! Complete the journey to collect your candy!
 
 ## Technical Details
 
@@ -126,25 +138,58 @@ Edit `src/data/levelData.js` to modify:
 
 ## Game Mechanics
 
-### Marshmallow Transformation
-- Press **E** to toggle between candy ball and marshmallow form
-- **Candy Ball**: Normal movement, can jump, falls at normal speed
-- **Marshmallow**: Slower movement, cannot jump, floats down slowly (buoyancy effect)
-- Use marshmallow form to safely descend across large gaps
-- Transformation has particle effects (puffs for marshmallow, sparkles for candy)
+### Triple Form System
+Press **E** or **Q** to switch between three unique forms:
+
+**Candy Ball (Default)**
+- Normal movement speed (480 max)
+- Can jump with responsive controls
+- Falls at normal gravity
+- Shine effect points toward moon
+
+**Marshmallow Form (E key)**
+- Slower movement (240 max speed)
+- Cannot jump
+- Floats down slowly with buoyancy effect
+- Water physics: bobs on water surface with realistic splash and dip effects
+- Matte appearance (no shine)
+- Burns and crumbles on death
+
+**Jelly Form (Q key)**
+- Moderate speed (280 max)
+- Very high jumps (1300 velocity)
+- Automatic idle hops every 800ms when grounded
+- Floaty air physics (reduced gravity)
+- Fast-fall mechanic: press jump in air to quickly drop to ground
+- Bouncy landing with squish animation
+- Splats and dissolves on death
+
+### Water Physics (Marshmallow Only)
+- Realistic bobbing on water surface
+- Entry splash based on velocity
+- Dip and recovery animation on landing
+- Can climb out at water edges
+- Increased drag for realistic resistance
 
 ### Enemies
 - Cursed bats patrol between defined points
 - Smooth floating/bobbing animation
-- Instant death on contact
+- Instant respawn on contact (lose 1 life)
 - Cannot be defeated - must be avoided
+
+### Lives System
+- Start with 3 lives
+- Lose life when hit by enemy or falling off world
+- Instant respawn at start position
+- Form-specific death animations
+- Game over when all lives lost
 
 ### Physics
 - Ball rolls realistically based on velocity
-- Shine effect always points toward moon (hidden in marshmallow form)
+- Shine effect points toward moon (candy and jelly only)
 - Jump buffering allows jump input slightly before landing
 - Friction system for smooth deceleration
-- Marshmallow has buoyancy that counteracts gravity when falling
+- Form-specific physics properties
 
 ## Browser Compatibility
 
