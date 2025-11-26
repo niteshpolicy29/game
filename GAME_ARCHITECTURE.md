@@ -5,11 +5,11 @@
 Haunted Pumpkin is a 2D physics-based platformer built with Phaser 3. The architecture follows a scene-based structure with clear separation between game logic, rendering, and state management. The game uses Arcade Physics for collision detection and movement, with custom entity classes extending Phaser's built-in types.
 
 The game features a unique triple-form transformation system where the player can switch between three distinct forms:
-- **Candy Ball**: Standard platforming with normal physics
-- **Marshmallow**: Buoyant floating with water physics
-- **Jelly**: Bouncy movement with auto-hops and fast-fall mechanics
+- **Candy Ball**: Standard platforming with normal physics (480 max speed, -960 jump velocity)
+- **Marshmallow**: Buoyant floating with realistic water physics (240 max speed, cannot jump, floats on water)
+- **Jelly**: Bouncy movement with auto-hops and fast-fall mechanics (280 max speed, -1300 jump velocity, auto-hops every 800ms)
 
-Each form has unique physics properties, visual appearance, and death animations, enabling creative level design with varied gap sizes and water crossings.
+Each form has unique physics properties, procedurally generated textures, visual appearance, and death animations, enabling creative level design with varied gap sizes (280-980 units) and water crossings (850 and 560 unit water areas).
 
 ## System Architecture
 
@@ -123,6 +123,17 @@ Central configuration for all game constants and Phaser settings.
   - Empty candy bags
   - Restart and menu options
 - **Input**: SPACE to restart, M for menu
+
+#### RespawnScene (src/scenes/RespawnScene.js)
+- **Purpose**: Display encouraging message during respawn
+- **Features**:
+  - Cheering chibi character (3 variations based on lives lost)
+  - Encouraging messages that change with each death
+  - Lives remaining display
+  - Bouncing animation on chibi
+  - 2.5 second display before respawn
+- **Lifecycle**: Pauses GameScene, displays message, resumes GameScene
+- **Assets**: Uses pre-loaded chibi images from public/cheer-chibi/
 
 #### VictoryScene (src/scenes/VictoryScene.js)
 - **Purpose**: Celebrate level completion
@@ -286,6 +297,38 @@ When marshmallow enters water, realistic physics apply:
 **Methods:**
 - `createPortalVisuals()`: Generate candy bag texture
 - `createAnimations()`: Set up glow, particles, and wobble
+
+#### Crow (src/entities/Crow.js)
+
+**Extends**: `Phaser.GameObjects.Sprite`
+
+**Visual Features:**
+- Black silhouette with animated wings
+- Two-frame wing flapping animation (200ms per frame)
+- Procedurally generated texture with body, head, beak, wings, tail
+- Depth: -50 (behind all gameplay elements)
+
+**Behavior:**
+- Flies horizontally across the screen
+- Random speed (100-200 pixels/second)
+- Spawns from either side of the world
+- Destroys itself when off-screen
+- New crows spawn every 8 seconds
+
+**Properties:**
+```javascript
+{
+  direction: 1 or -1,  // Flight direction
+  speed: 100-200,      // Horizontal velocity
+  wingFrame: 0 or 1,   // Current animation frame
+  wingAnimTime: number // Animation timer
+}
+```
+
+**Methods:**
+- `createCrowTextures(scene)`: Static method to generate two animation frames
+- `createCrowFrame(scene, textureName, wingPosition)`: Generate single frame texture
+- `update(delta)`: Move horizontally and animate wings
 
 ### 4. Data Layer
 
@@ -478,26 +521,35 @@ GameScene.update() [60 FPS]
 ```
 Player touches enemy OR falls off world
   → handleDeath()
-    → Decrement lives counter
-    → Disable player controls
-    → Camera flash effect
+    → Decrement lives counter (4 → 3 → 2 → 1 → 0)
+    → Disable player controls (isDead = true)
+    → Camera flash effect (300ms red flash)
     → Play form-specific death animation:
-      - candyBreak(): Particle explosion
-      - marshmallowExpire(): Burn and crumble
-      - jellyDeath(): Splat and dissolve
-    → Create floating ghost marker
-    → Show death screen (2 seconds)
-      → Display "YOU DIED"
-      → Show lives remaining
-      → "Respawning..." message
+      - candyBreak(): Particle explosion (12 particles)
+      - marshmallowExpire(): Burn dark → crumble into ash with smoke
+      - jellyDeath(): Splat and dissolve (15 green particles)
+    → Create floating ghost marker (fades in, floats up, fades out)
     → If lives > 0:
-      → respawnPlayer()
-        → Reset position to start
-        → Transform to candy form
-        → Restore controls
-        → Resume camera following
+      → Wait 1000ms
+      → Pause GameScene
+      → Launch RespawnScene (overlay)
+        → Show cheering chibi (3 variations based on lives lost)
+        → Display encouraging message
+        → Show lives remaining
+        → Wait 2500ms
+        → Call GameScene.respawnPlayer()
+          → Reset position to start (no checkpoints in current level)
+          → Transform to candy form
+          → Restore controls (isDead = false)
+          → Resume camera following
+        → Stop RespawnScene
+        → Resume GameScene
     → If lives == 0:
+      → Wait 1000ms
       → Transition to GameOverScene
+        → Show crying kids with tears
+        → Display "NO CANDY!" message
+        → Show restart and menu options
 ```
 
 ### Victory Flow

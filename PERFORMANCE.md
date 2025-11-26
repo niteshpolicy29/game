@@ -577,14 +577,25 @@ export default {
 
 The game is well-optimized for 60 FPS gameplay on modern hardware. Key optimizations include:
 
-1. Static physics bodies for platforms
-2. Texture caching and reuse (candy ball, marshmallow, jelly, enemies)
-3. Efficient collision detection
-4. Tween-based animations
-5. Proper memory cleanup
-6. Conditional physics (form-specific calculations only when needed)
-7. Particle cleanup after transformation and death effects
-8. Water physics only calculated when marshmallow is in water
-9. Form-specific death animations with proper cleanup
+1. **Static physics bodies** for platforms (no physics calculations)
+2. **Texture caching and reuse** (candy ball, marshmallow, jelly, enemies, crows)
+3. **Efficient collision detection** using physics groups
+4. **Tween-based animations** instead of manual updates
+5. **Proper memory cleanup** (particles, graphics objects destroyed after use)
+6. **Conditional physics** (form-specific calculations only when needed)
+7. **Particle cleanup** after transformation and death effects
+8. **Water physics** only calculated when marshmallow is in water
+9. **Form-specific death animations** with proper cleanup
+10. **Procedural texture generation** (one-time creation, then cached)
+11. **Background parallax** with scroll factors for depth
+12. **Crow object pooling** (implicit through array management)
 
-Performance is stable across the 8220-unit world with 6 enemies and 20+ platforms. The triple-form transformation system adds minimal overhead due to conditional physics application. Water physics for marshmallow form are efficiently calculated only when needed. Room for future enhancements like object pooling and sprite atlases if needed for larger levels or more complex gameplay.
+Performance is stable across the 8220-unit world with:
+- 6 enemy bats with patrol AI
+- 20+ platforms (static bodies)
+- 2 water areas with animated waves
+- 3+ flying crows with wing animation
+- Extensive Halloween background elements
+- Triple-form transformation system
+
+The triple-form transformation system adds minimal overhead due to conditional physics application. Water physics for marshmallow form are efficiently calculated only when needed using spring physics and adaptive dampening. Room for future enhancements like explicit object pooling for particles and sprite atlases if needed for larger levels or more complex gameplay.

@@ -1,6 +1,6 @@
 # Haunted Pumpkin - Ball Platformer Game
 
-A Halloween-themed 2D platformer game built with Phaser 3 where you control a candy ball character through a spooky physics-based environment. Navigate through haunted landscapes, avoid cursed bats, and collect your candy before the night ends!
+A Halloween-themed 2D platformer game built with Phaser 3 featuring a unique triple-form transformation system. Control a candy ball character that can transform into marshmallow and jelly forms, each with distinct physics. Navigate through haunted landscapes with water crossings, avoid cursed bats, and collect your candy before the night ends!
 
 ## Features
 
@@ -139,37 +139,49 @@ Edit `src/data/levelData.js` to modify:
 ## Game Mechanics
 
 ### Triple Form System
-Press **E** or **Q** to switch between three unique forms:
+Press **E** or **Q** to switch between three unique forms with distinct physics:
 
 **Candy Ball (Default)**
 - Normal movement speed (480 max)
-- Can jump with responsive controls
-- Falls at normal gravity
-- Shine effect points toward moon
+- Standard jump with responsive controls
+- Falls at normal gravity (1920)
+- Shine effect dynamically points toward moon
+- Breaks into colored particles on death
 
 **Marshmallow Form (E key)**
-- Slower movement (240 max speed)
-- Cannot jump
-- Floats down slowly with buoyancy effect
-- Water physics: bobs on water surface with realistic splash and dip effects
-- Matte appearance (no shine)
-- Burns and crumbles on death
+- Slower movement (240 max speed, half of candy)
+- Cannot jump - must use platforms and water
+- Floats down slowly with buoyancy effect (-400 upward force)
+- **Realistic Water Physics:**
+  - Bobs gently on water surface (6 pixel amplitude)
+  - Entry splash based on velocity
+  - Dip and recovery animation on landing
+  - Movement creates turbulence (faster bobbing)
+  - Can climb out at water edges with upward boost
+  - Increased drag for realistic resistance
+- Matte appearance (no shine sprite)
+- Burns dark and crumbles into ash on death
 
 **Jelly Form (Q key)**
 - Moderate speed (280 max)
-- Very high jumps (1300 velocity)
+- Very high jumps (-1300 velocity, 36% higher than candy)
 - Automatic idle hops every 800ms when grounded
-- Floaty air physics (reduced gravity)
-- Fast-fall mechanic: press jump in air to quickly drop to ground
-- Bouncy landing with squish animation
-- Splats and dissolves on death
+- Floaty air physics (reduced gravity when falling)
+- **Fast-fall mechanic:** Press jump in air to quickly drop to ground
+- Bouncy physics (0.5 bounce coefficient)
+- Squish animation on landing
+- Splats and dissolves into green particles on death
 
 ### Water Physics (Marshmallow Only)
-- Realistic bobbing on water surface
-- Entry splash based on velocity
-- Dip and recovery animation on landing
-- Can climb out at water edges
-- Increased drag for realistic resistance
+Marshmallow form features a sophisticated water physics system:
+- **Realistic bobbing:** Gentle sinusoidal motion (6 pixel amplitude) on water surface
+- **Entry splash:** Particle effects scaled by entry velocity
+- **Dip and recovery:** Smooth cubic ease-out animation after landing
+- **Movement turbulence:** Faster movement increases bobbing speed
+- **Edge climbing:** Upward boost (-600 velocity) when approaching water edges
+- **Adaptive drag:** Water resistance increases with speed (180+ base drag)
+- **Spring physics:** Smooth floating with velocity-based dampening
+- Two water areas in level: 850 and 560 units wide
 
 ### Enemies
 - Cursed bats patrol between defined points
