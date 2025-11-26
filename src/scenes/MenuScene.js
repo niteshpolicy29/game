@@ -11,7 +11,7 @@ export class MenuScene extends Phaser.Scene {
             this.cameras.main.centerX,
             this.cameras.main.centerY - 100,
             'HAUNTED PUMPKIN',
-            { fontSize: '96px', fill: '#ff6600', fontStyle: 'bold' }
+            { fontFamily: 'October Crow, cursive', fontSize: '96px', fill: '#ff6600' }
         );
         title.setOrigin(0.5);
         title.setShadow(5, 5, '#000000', 10);

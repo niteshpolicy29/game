@@ -5,6 +5,13 @@ export class GameOverScene extends Phaser.Scene {
         super({ key: 'GameOverScene' });
     }
     
+    preload() {
+        // Load three different chibi crying kids
+        this.load.image('chibi-kid-1', '/crying-chibi/chibi_one_crying-removebg-preview.png');
+        this.load.image('chibi-kid-2', '/crying-chibi/chibi_two_crying-removebg-preview.png');
+        this.load.image('chibi-kid-3', '/crying-chibi/chibi_three_crying-removebg-preview.png');
+    }
+    
     create() {
         // Dark background
         this.add.rectangle(
@@ -21,7 +28,7 @@ export class GameOverScene extends Phaser.Scene {
             this.cameras.main.centerX,
             this.cameras.main.centerY - 200,
             'NO CANDY!',
-            { fontSize: '96px', fill: '#cc0000', fontStyle: 'bold' }
+            { fontFamily: 'October Crow, cursive', fontSize: '96px', fill: '#cc0000' }
         );
         gameOverText.setOrigin(0.5);
         gameOverText.setShadow(5, 5, '#000000', 15);
@@ -80,18 +87,46 @@ export class GameOverScene extends Phaser.Scene {
         const centerX = this.cameras.main.centerX;
         const centerY = this.cameras.main.centerY;
         
-        // Create 3 crying kids
+        // Create 3 crying kids using the chibi image
         const kidPositions = [
-            { x: centerX - 200, y: centerY + 20 },
-            { x: centerX, y: centerY + 20 },
-            { x: centerX + 200, y: centerY + 20 }
+            { x: centerX - 250, y: centerY + 50 },
+            { x: centerX, y: centerY + 50 },
+            { x: centerX + 250, y: centerY + 50 }
         ];
         
         kidPositions.forEach((pos, index) => {
-            this.createCryingKid(pos.x, pos.y, index);
+            // Add different chibi image for each kid
+            const chibiKey = `chibi-kid-${index + 1}`;
+            const kid = this.add.image(pos.x, pos.y, chibiKey);
+            kid.setScale(0.4); // All same size now
+            
+            // Add tears animation
+            this.createTears(pos.x, pos.y - 80, index);
         });
     }
     
+    createTears(x, y, index) {
+        // Continuous tears falling
+        this.time.addEvent({
+            delay: 400 + index * 200,
+            callback: () => {
+                const tearX = x + (Math.random() > 0.5 ? -20 : 20);
+                const tear = this.add.circle(tearX, y, 4, 0x6699ff, 0.9);
+                this.tweens.add({
+                    targets: tear,
+                    y: y + 100,
+                    alpha: 0,
+                    duration: 1000,
+                    ease: 'Sine.easeIn',
+                    onComplete: () => tear.destroy()
+                });
+            },
+            loop: true
+        });
+    }
+    
+    // Old procedural kid generation - now using chibi image instead
+    /*
     createCryingKid(x, y, index) {
         const graphics = this.add.graphics();
         
@@ -117,23 +152,45 @@ export class GameOverScene extends Phaser.Scene {
         graphics.fillRect(x - 22, y + 105, 19, 8);
         graphics.fillRect(x + 3, y + 105, 19, 8);
         
-        // Head (realistic skin tone)
-        graphics.fillStyle(0xffcc99, 1);
-        graphics.fillCircle(x, y - 10, 28);
+        // Head (anime style - larger and rounder)
+        graphics.fillStyle(0xffd4a3, 1);
+        graphics.fillCircle(x, y - 15, 35);
         
-        // Hair
-        graphics.fillStyle(0x4a2a1a, 1);
-        graphics.fillCircle(x - 15, y - 25, 18);
-        graphics.fillCircle(x, y - 30, 20);
-        graphics.fillCircle(x + 15, y - 25, 18);
+        // Hair (anime style - spiky/messy)
+        const hairColors = [0x4a2a1a, 0xffd700, 0x8b4513];
+        graphics.fillStyle(hairColors[index % 3], 1);
         
-        // Sad closed eyes (crying hard)
-        graphics.lineStyle(3, 0x000000, 1);
+        // Spiky hair tufts
+        for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI - Math.PI / 2;
+            const hairX = x + Math.cos(angle) * 25;
+            const hairY = y - 35 + Math.sin(angle) * 15;
+            graphics.fillCircle(hairX, hairY, 15);
+        }
+        
+        // Large anime eyes (crying with X shape)
+        graphics.fillStyle(0xffffff, 1);
+        graphics.fillCircle(x - 12, y - 18, 10);
+        graphics.fillCircle(x + 12, y - 18, 10);
+        
+        // Crying X eyes
+        graphics.lineStyle(4, 0x000000, 1);
         graphics.beginPath();
-        graphics.arc(x - 10, y - 15, 6, 0.2, Math.PI - 0.2, false);
+        graphics.moveTo(x - 16, y - 22);
+        graphics.lineTo(x - 8, y - 14);
         graphics.strokePath();
         graphics.beginPath();
-        graphics.arc(x + 10, y - 15, 6, 0.2, Math.PI - 0.2, false);
+        graphics.moveTo(x - 8, y - 22);
+        graphics.lineTo(x - 16, y - 14);
+        graphics.strokePath();
+        
+        graphics.beginPath();
+        graphics.moveTo(x + 8, y - 22);
+        graphics.lineTo(x + 16, y - 14);
+        graphics.strokePath();
+        graphics.beginPath();
+        graphics.moveTo(x + 16, y - 22);
+        graphics.lineTo(x + 8, y - 14);
         graphics.strokePath();
         
         // Tears streaming down
@@ -145,14 +202,14 @@ export class GameOverScene extends Phaser.Scene {
         graphics.fillCircle(x - 10, y + 8, 2);
         graphics.fillCircle(x + 10, y + 8, 2);
         
-        // Wide open crying mouth
+        // Wide open crying mouth (anime style - larger)
         graphics.fillStyle(0x000000, 1);
-        graphics.fillEllipse(x, y + 5, 12, 16);
+        graphics.fillEllipse(x, y, 16, 20);
         
-        // Red cheeks from crying
-        graphics.fillStyle(0xff6666, 0.5);
-        graphics.fillCircle(x - 20, y - 5, 8);
-        graphics.fillCircle(x + 20, y - 5, 8);
+        // Anime blush marks (red cheeks)
+        graphics.fillStyle(0xff9999, 0.7);
+        graphics.fillEllipse(x - 25, y - 8, 12, 8);
+        graphics.fillEllipse(x + 25, y - 8, 12, 8);
         
         // Empty candy bag on ground
         graphics.fillStyle(0xff6600, 1);
@@ -190,4 +247,5 @@ export class GameOverScene extends Phaser.Scene {
             loop: true
         });
     }
+    */
 }

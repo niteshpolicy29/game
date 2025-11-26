@@ -2,12 +2,12 @@ import Phaser from 'phaser';
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, patrolStart, patrolEnd) {
-        // Create texture first if it doesn't exist
-        if (!scene.textures.exists('enemy-bat')) {
-            Enemy.createBatTexture(scene);
+        // Create textures first if they don't exist
+        if (!scene.textures.exists('enemy-bat-1')) {
+            Enemy.createBatTextures(scene);
         }
         
-        super(scene, x, y, 'enemy-bat');
+        super(scene, x, y, 'enemy-bat-1');
         
         this.patrolStart = patrolStart;
         this.patrolEnd = patrolEnd;
@@ -15,6 +15,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.direction = 1;
         this.baseY = y;
         this.bobPhase = Math.random() * Math.PI * 2; // Random start phase
+        this.wingFrame = 0;
+        this.wingAnimTime = 0;
         
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -25,20 +27,31 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.body.setImmovable(true);
     }
     
-    static createBatTexture(scene) {
+    static createBatTextures(scene) {
+        // Create 3 frames for wing flapping animation
+        Enemy.createBatFrame(scene, 'enemy-bat-1', 0);    // Wings up
+        Enemy.createBatFrame(scene, 'enemy-bat-2', 0.5);  // Wings middle
+        Enemy.createBatFrame(scene, 'enemy-bat-3', 1);    // Wings down
+    }
+    
+    static createBatFrame(scene, textureName, wingPosition) {
         const size = 100;
         const centerX = size / 2;
         const centerY = size / 2;
         const graphics = scene.make.graphics({ x: 0, y: 0 });
         
+        // Calculate wing angle based on position (0 = up, 0.5 = middle, 1 = down)
+        const wingAngle = wingPosition * 30; // 0 to 30 degrees
+        const wingYOffset = wingPosition * 15; // 0 to 15 pixels down
+        
         // Large bat wings - dark purple with membrane look
         graphics.fillStyle(0x3d1a4d, 1);
         
-        // Left wing - larger and more spread
+        // Left wing - animated position
         graphics.beginPath();
         graphics.moveTo(centerX - 12, centerY);
-        graphics.lineTo(centerX - 45, centerY - 15);
-        graphics.lineTo(centerX - 40, centerY + 10);
+        graphics.lineTo(centerX - 45, centerY - 15 + wingYOffset);
+        graphics.lineTo(centerX - 40, centerY + 10 + wingYOffset);
         graphics.lineTo(centerX - 12, centerY + 5);
         graphics.closePath();
         graphics.fillPath();
@@ -46,15 +59,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         // Left wing detail
         graphics.fillTriangle(
             centerX - 12, centerY,
-            centerX - 30, centerY - 8,
-            centerX - 25, centerY + 5
+            centerX - 30, centerY - 8 + wingYOffset * 0.6,
+            centerX - 25, centerY + 5 + wingYOffset * 0.6
         );
         
-        // Right wing - larger and more spread
+        // Right wing - animated position
         graphics.beginPath();
         graphics.moveTo(centerX + 12, centerY);
-        graphics.lineTo(centerX + 45, centerY - 15);
-        graphics.lineTo(centerX + 40, centerY + 10);
+        graphics.lineTo(centerX + 45, centerY - 15 + wingYOffset);
+        graphics.lineTo(centerX + 40, centerY + 10 + wingYOffset);
         graphics.lineTo(centerX + 12, centerY + 5);
         graphics.closePath();
         graphics.fillPath();
@@ -62,8 +75,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         // Right wing detail
         graphics.fillTriangle(
             centerX + 12, centerY,
-            centerX + 30, centerY - 8,
-            centerX + 25, centerY + 5
+            centerX + 30, centerY - 8 + wingYOffset * 0.6,
+            centerX + 25, centerY + 5 + wingYOffset * 0.6
         );
         
         // Bat body - round and chubby
@@ -108,9 +121,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             centerX + 1, centerY - 2
         );
         
-        graphics.generateTexture('enemy-bat', size, size);
+        graphics.generateTexture(textureName, size, size);
         graphics.destroy();
-        console.log('Bat texture created');
     }
 
     update(time, delta) {
@@ -131,5 +143,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         const targetY = this.baseY + Math.sin(this.bobPhase) * 15;
         const bobVelocity = (targetY - this.y) * 3;
         this.body.setVelocityY(bobVelocity);
+        
+        // Wing flapping animation - cycle through 3 frames
+        this.wingAnimTime += delta || 16;
+        if (this.wingAnimTime >= 150) { // Change frame every 150ms
+            this.wingAnimTime = 0;
+            this.wingFrame = (this.wingFrame + 1) % 3;
+            this.setTexture(`enemy-bat-${this.wingFrame + 1}`);
+        }
     }
 }

@@ -51,7 +51,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.marshmallowAcceleration = 720;
         this.jellyMaxSpeed = 280; // Much slower horizontal movement for floaty feel
         this.jellyAcceleration = 840; // Slower acceleration
-        this.jellyJumpVelocity = -1300; // Much higher jump for bouncy feel
+        this.jellyJumpVelocity = -1500; // Much higher jump for bouncy feel
         this.jellyIdleHopVelocity = -500; // Small automatic hops
         this.jellyBounce = 0.5; // Very bouncy!
         this.jellyHopTimer = 0; // Timer for automatic hops
@@ -220,6 +220,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             return;
         }
         
+        // Safety check: ensure scale is reset (but allow brief animation periods)
+        // Check every 100ms to avoid constant checks
+        if (!this._lastScaleCheck || Date.now() - this._lastScaleCheck > 100) {
+            this._lastScaleCheck = Date.now();
+            const activeTweens = this.scene.tweens.getTweensOf(this);
+            if (activeTweens.length === 0 && (this.scaleX !== 1 || this.scaleY !== 1)) {
+                this.setScale(1, 1);
+            }
+        }
+        
         // Toggle jelly form with Q key
         if (Phaser.Input.Keyboard.JustDown(keys.Q)) {
             this.toggleJelly();
@@ -259,19 +269,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.currentForm === 'marshmallow') {
             this.applyBuoyancy();
         } else if (this.currentForm === 'jelly') {
-            if (!this.isGrounded) {
-                // Check if fast-falling
-                if (this.jellyFastFalling) {
-                    this.applyJellyFastFall();
-                } else {
-                    // Jelly floats more in the air - reduced gravity effect
-                    this.applyJellyFloat();
-                }
-            } else {
-                // Clear fast-fall state when grounded
+            // Clear fast-fall state when grounded
+            if (this.isGrounded) {
                 this.jellyFastFalling = false;
                 // Automatic idle hopping when grounded
                 this.updateJellyIdleHop();
+            }
+            
+            // Only apply special physics when in air
+            if (!this.isGrounded) {
+                if (this.jellyFastFalling) {
+                    this.applyJellyFastFall();
+                } else {
+                    this.applyJellyFloat();
+                }
             }
         }
     }
@@ -327,15 +338,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.jellyHopTimer = Date.now(); // Reset hop timer
                 this.jellyFastFalling = false; // Clear fast-fall state
                 
-                // Enhanced squish effect for manual jump
-                this.scene.tweens.add({
-                    targets: this,
-                    scaleX: 0.7,
-                    scaleY: 1.4,
-                    duration: 150,
-                    yoyo: true,
-                    ease: 'Back.easeOut'
-                });
+                // Kill existing tweens and reset scale
+                this.scene.tweens.killTweensOf(this);
+                this.setScale(1, 1);
+                
+                // No squish animation to prevent scale issues
             } else if (!isActuallyGrounded) {
                 // In the air - trigger fast-fall and buffer jump
                 this.jellyFastFalling = true;
@@ -400,27 +407,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     
     onLanding(impactVelocity) {
-        // Jelly bounces and squishes on landing - more dramatic
-        if (this.currentForm === 'jelly') {
-            // Enhanced squish animation with multiple bounces
-            this.scene.tweens.add({
-                targets: this,
-                scaleX: 1.4,
-                scaleY: 0.6,
-                duration: 120,
-                yoyo: true,
-                repeat: 1,
-                ease: 'Bounce.easeOut'
-            });
-        } else {
-            // Ensure scale is reset for other forms
-            this.setScale(1, 1);
-        }
-    }
-    
-    onLanding(impactVelocity) {
-        // Disable landing animation to prevent physics issues
-        // Just ensure scale is reset
+        // Kill any existing scale tweens to prevent conflicts
+        this.scene.tweens.killTweensOf(this);
+        
+        // Reset scale immediately - no animations to prevent stretching bugs
         this.setScale(1, 1);
     }
     
@@ -449,6 +439,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const oldForm = this.currentForm;
         this.currentForm = form;
         
+        // Kill all existing tweens and reset scale immediately
+        this.scene.tweens.killTweensOf(this);
+        this.setScale(1, 1);
+        
         // Update backward compatibility flags
         this.isMarshmallow = (form === 'marshmallow');
         this.isJelly = (form === 'jelly');
@@ -470,15 +464,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.jellyHopTimer = Date.now();
         }
         
-        // Transformation animation
-        this.scene.tweens.add({
-            targets: this,
-            scaleX: 1.2,
-            scaleY: 0.8,
-            duration: 150,
-            yoyo: true,
-            ease: 'Sine.easeInOut'
-        });
+        // No transformation animation to prevent physics issues
         
         // Particles based on new form
         const particleColor = form === 'candy' ? 0xffaa00 : 
@@ -543,15 +529,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     
     applyJellyFloat() {
         // Jelly has reduced gravity for floaty feel
-        // Apply upward force to counteract some gravity
-        const floatForce = -600; // Reduces effective gravity
-        this.body.setAccelerationY(floatForce);
+        // Only apply if falling (don't interfere with jumping up)
+        if (this.body.velocity.y > 0) {
+            const floatForce = -400; // Reduces effective gravity
+            this.body.setAccelerationY(floatForce);
+        } else {
+            // Reset acceleration when moving up
+            this.body.setAccelerationY(0);
+        }
     }
     
     applyJellyFastFall() {
-        // Fast-fall to ground when jump pressed during auto-hop
-        // Apply strong downward force
-        const fastFallForce = 1200; // Extra downward acceleration
+        // Fast-fall to ground when jump pressed in air
+        const fastFallForce = 1200;
         this.body.setAccelerationY(fastFallForce);
         
         // Ensure falling velocity
@@ -569,15 +559,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.body.setVelocityY(this.jellyIdleHopVelocity);
             this.jellyHopTimer = currentTime;
             
-            // Small squish animation for idle hop
-            this.scene.tweens.add({
-                targets: this,
-                scaleX: 0.9,
-                scaleY: 1.15,
-                duration: 100,
-                yoyo: true,
-                ease: 'Sine.easeOut'
-            });
+            // No squish animation to prevent scale issues
         }
     }
     

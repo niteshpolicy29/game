@@ -5,38 +5,59 @@ export class VictoryScene extends Phaser.Scene {
         super({ key: 'VictoryScene' });
     }
     
+    preload() {
+        // Load three happy chibi kids
+        this.load.image('happy-kid-1', '/happy-chibi/chibi_one_happy-removebg-preview.png');
+        this.load.image('happy-kid-2', '/happy-chibi/chibi_two_happy-removebg-preview.png');
+        this.load.image('happy-kid-3', '/happy-chibi/chibi_three_happy-removebg-preview.png');
+    }
+    
     create(data) {
         const completionTime = data.time || 0;
         
-        // Spooky Victory text
+        // Dark background
+        this.add.rectangle(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY,
+            this.cameras.main.width,
+            this.cameras.main.height,
+            0x0a0a0f,
+            0.9
+        );
+        
+        // Victory text
         const victoryText = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY - 120,
-            'YOU ESCAPED!',
-            { fontSize: '84px', fill: '#00ff00', fontStyle: 'bold' }
+            this.cameras.main.centerY - 200,
+            'CANDY COLLECTED!',
+            { fontFamily: 'October Crow, cursive', fontSize: '84px', fill: '#00ff00' }
         );
         victoryText.setOrigin(0.5);
         victoryText.setShadow(5, 5, '#000000', 15);
         
-        // Subtitle
-        const subtitle = this.add.text(
+        // Thank you message from kids
+        const thankYouText = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY - 30,
-            'The Pumpkin Lives Another Night',
-            { fontSize: '36px', fill: '#ff6600', fontStyle: 'italic' }
+            this.cameras.main.centerY - 120,
+            'Th-thank you sooo much for the candy!!',
+            { fontSize: '38px', fill: '#ffaa00', fontStyle: 'italic', align: 'center' }
         );
-        subtitle.setOrigin(0.5);
+        thankYouText.setOrigin(0.5);
         
-        // Completion time
-        const timeText = this.add.text(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY + 40,
-            `Escape Time: ${completionTime} seconds`,
-            { fontSize: '32px', fill: '#8b00ff' }
-        );
-        timeText.setOrigin(0.5);
+        // Add pulsing effect to thank you text
+        this.tweens.add({
+            targets: thankYouText,
+            scale: 1.05,
+            duration: 800,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
         
-        // Restart instructions - positioned at bottom
+        // Create happy kids
+        this.createHappyKids();
+        
+        // Restart instructions
         const restartText = this.add.text(
             this.cameras.main.centerX,
             this.cameras.main.height - 120,
@@ -45,7 +66,6 @@ export class VictoryScene extends Phaser.Scene {
         );
         restartText.setOrigin(0.5);
         
-        // Eerie blinking effect
         this.tweens.add({
             targets: restartText,
             alpha: 0.2,
@@ -55,7 +75,7 @@ export class VictoryScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
         
-        // Menu option - clearly positioned at bottom
+        // Menu option
         const menuText = this.add.text(
             this.cameras.main.centerX,
             this.cameras.main.height - 60,
@@ -64,7 +84,7 @@ export class VictoryScene extends Phaser.Scene {
         );
         menuText.setOrigin(0.5);
         
-        // Save completion (localStorage)
+        // Save completion
         this.saveCompletion(completionTime);
         
         // Input
@@ -74,6 +94,46 @@ export class VictoryScene extends Phaser.Scene {
         
         this.input.keyboard.once('keydown-M', () => {
             this.scene.start('MenuScene');
+        });
+    }
+    
+    createHappyKids() {
+        const centerX = this.cameras.main.centerX;
+        const centerY = this.cameras.main.centerY;
+        
+        const kidPositions = [
+            { x: centerX - 250, y: centerY + 50 },
+            { x: centerX, y: centerY + 50 },
+            { x: centerX + 250, y: centerY + 50 }
+        ];
+        
+        kidPositions.forEach((pos, index) => {
+            const happyKey = `happy-kid-${index + 1}`;
+            const kid = this.add.image(pos.x, pos.y, happyKey);
+            kid.setScale(0.4);
+            
+            // Add sparkles animation
+            this.createSparkles(pos.x, pos.y - 80, index);
+        });
+    }
+    
+    createSparkles(x, y, index) {
+        this.time.addEvent({
+            delay: 300 + index * 150,
+            callback: () => {
+                const sparkleX = x + (Math.random() - 0.5) * 60;
+                const sparkleY = y + (Math.random() - 0.5) * 60;
+                const sparkle = this.add.circle(sparkleX, sparkleY, 5, 0xffff00, 0.9);
+                this.tweens.add({
+                    targets: sparkle,
+                    alpha: 0,
+                    scale: 0,
+                    duration: 800,
+                    ease: 'Sine.easeOut',
+                    onComplete: () => sparkle.destroy()
+                });
+            },
+            loop: true
         });
     }
     

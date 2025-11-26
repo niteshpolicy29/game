@@ -15,8 +15,8 @@ export class BootScene extends Phaser.Scene {
         );
         loadingText.setOrigin(0.5);
         
-        // Any assets would be loaded here
-        // For this minimal game, we're generating graphics at runtime
+        // Load background image
+        this.load.image('background', '/bg.png');
     }
     
     create() {

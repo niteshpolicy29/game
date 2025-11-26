@@ -9,7 +9,9 @@ export const GameConfig = {
     render: {
         antialias: true,
         pixelArt: false,
-        roundPixels: false
+        roundPixels: false,
+        powerPreference: 'high-performance',
+        mipmapFilter: 'LINEAR_MIPMAP_LINEAR'
     },
     physics: {
         default: 'arcade',

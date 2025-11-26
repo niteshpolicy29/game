@@ -5,6 +5,11 @@ export class TutorialScene extends Phaser.Scene {
         super({ key: 'TutorialScene' });
     }
     
+    preload() {
+        // Load background image for use in GameScene
+        this.load.image('background', '/bg.png');
+    }
+    
     create() {
         const centerX = this.cameras.main.centerX;
         
@@ -13,9 +18,9 @@ export class TutorialScene extends Phaser.Scene {
         
         // Title
         const title = this.add.text(centerX, 60, 'HOW TO PLAY', {
-            fontSize: '56px',
+            fontFamily: 'October Crow, cursive',
+            fontSize: '64px',
             fill: '#ff6600',
-            fontStyle: 'bold',
             stroke: '#000000',
             strokeThickness: 6
         });

@@ -5,6 +5,7 @@ import { Player } from '../entities/Player.js';
 import { Goal } from '../entities/Goal.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Checkpoint } from '../entities/Checkpoint.js';
+import { Crow } from '../entities/Crow.js';
 
 export class GameScene extends Phaser.Scene {
     constructor() {
@@ -17,16 +18,35 @@ export class GameScene extends Phaser.Scene {
         // Set world bounds
         this.physics.world.setBounds(0, 0, LevelData.worldBounds.width, LevelData.worldBounds.height);
         
-        // Create spooky Halloween night background
-        try {
-            this.createHalloweenBackground();
-            console.log('Background created');
-        } catch (error) {
-            console.error('Error creating background:', error);
+        // Create tiled background for better quality (no stretching)
+        const bgTexture = this.textures.get('background');
+        const bgWidth = bgTexture.source[0].width;
+        const bgHeight = bgTexture.source[0].height;
+        
+        // Calculate how many tiles we need
+        const tilesX = Math.ceil(LevelData.worldBounds.width / bgWidth) + 1;
+        const tilesY = Math.ceil(LevelData.worldBounds.height / bgHeight) + 1;
+        
+        // Create tiled background
+        for (let x = 0; x < tilesX; x++) {
+            for (let y = 0; y < tilesY; y++) {
+                const tile = this.add.image(x * bgWidth, y * bgHeight, 'background');
+                tile.setOrigin(0, 0);
+                tile.setDepth(-100);
+            }
         }
         
+        // Create spooky Halloween night background (procedural elements on top)
+        // Commented out to show bg.png image instead
+        // try {
+        //     this.createHalloweenBackground();
+        //     console.log('Background created');
+        // } catch (error) {
+        //     console.error('Error creating background:', error);
+        // }
+        
         // Initialize lives system
-        this.lives = 3;
+        this.lives = 4;
         this.isRespawning = false;
         this.isFalling = false;
         this.currentCheckpoint = LevelData.playerStart;
@@ -68,6 +88,10 @@ export class GameScene extends Phaser.Scene {
         
         // Create goal
         this.goal = new Goal(this, LevelData.goal.x, LevelData.goal.y);
+        
+        // Create flying crows in background
+        this.crows = [];
+        this.createCrows();
         
         // Create water areas
         this.createWaterAreas();
@@ -138,6 +162,24 @@ export class GameScene extends Phaser.Scene {
                 }
             });
         }
+        
+        // Update crows
+        if (this.crows) {
+            this.crows.forEach((crow, index) => {
+                if (crow && crow.active) {
+                    crow.update(this.game.loop.delta);
+                } else if (crow && !crow.active) {
+                    this.crows.splice(index, 1);
+                }
+            });
+        }
+        
+        // Spawn new crows periodically
+        if (!this.lastCrowSpawn) this.lastCrowSpawn = 0;
+        if (this.time.now - this.lastCrowSpawn > 8000) {
+            this.spawnCrow();
+            this.lastCrowSpawn = this.time.now;
+        }
     }
     
     hitEnemy(player, enemy) {
@@ -160,9 +202,6 @@ export class GameScene extends Phaser.Scene {
         this.player.body.setVelocity(0, 0);
         this.player.body.setAcceleration(0, 0);
         
-        // Stop camera from following
-        this.cameras.main.stopFollow();
-        
         // Flash effect
         this.cameras.main.flash(300, 255, 0, 0);
         
@@ -183,6 +222,16 @@ export class GameScene extends Phaser.Scene {
         } else {
             this.candyBreak();
         }
+        
+        // Show respawn scene with cheering chibi after death animation
+        this.time.delayedCall(1000, () => {
+            const livesLost = 4 - this.lives;
+            this.scene.pause('GameScene');
+            this.scene.launch('RespawnScene', {
+                livesLost: livesLost,
+                livesRemaining: this.lives
+            });
+        });
     }
     
     candyBreak() {
@@ -219,10 +268,7 @@ export class GameScene extends Phaser.Scene {
             });
         }
         
-        // Show death screen and respawn
-        this.time.delayedCall(800, () => {
-            this.showDeathScreen();
-        });
+        // Death animation complete - RespawnScene will handle the rest
     }
     
     jellyDeath() {
@@ -256,10 +302,7 @@ export class GameScene extends Phaser.Scene {
             });
         }
         
-        // Show death screen and respawn
-        this.time.delayedCall(800, () => {
-            this.showDeathScreen();
-        });
+        // Death animation complete - RespawnScene will handle the rest
     }
     
     marshmallowExpire() {
@@ -330,107 +373,10 @@ export class GameScene extends Phaser.Scene {
             }
         });
         
-        // Show death screen and respawn
-        this.time.delayedCall(1400, () => {
-            this.showDeathScreen();
-        });
+        // Death animation complete - RespawnScene will handle the rest
     }
     
-    showDeathScreen() {
-        // Get current viewport dimensions
-        const centerX = this.cameras.main.width / 2;
-        const centerY = this.cameras.main.height / 2;
-        
-        // Create dark overlay
-        const overlay = this.add.rectangle(
-            centerX,
-            centerY,
-            this.cameras.main.width * 2,
-            this.cameras.main.height * 2,
-            0x000000,
-            0.85
-        );
-        overlay.setScrollFactor(0);
-        overlay.setDepth(2000);
-        
-        // Death message
-        const deathText = this.add.text(
-            centerX,
-            centerY - 60,
-            'YOU DIED',
-            {
-                fontSize: '72px',
-                fill: '#ff0000',
-                fontStyle: 'bold',
-                stroke: '#000000',
-                strokeThickness: 8
-            }
-        );
-        deathText.setOrigin(0.5);
-        deathText.setScrollFactor(0);
-        deathText.setDepth(2001);
-        
-        // Lives remaining
-        const livesText = this.add.text(
-            centerX,
-            centerY + 20,
-            `Lives Remaining: ${this.lives}`,
-            {
-                fontSize: '36px',
-                fill: '#ffffff',
-                fontStyle: 'bold',
-                stroke: '#000000',
-                strokeThickness: 4
-            }
-        );
-        livesText.setOrigin(0.5);
-        livesText.setScrollFactor(0);
-        livesText.setDepth(2001);
-        
-        // Respawning message
-        const respawnText = this.add.text(
-            centerX,
-            centerY + 80,
-            'Respawning...',
-            {
-                fontSize: '28px',
-                fill: '#ffaa00',
-                fontStyle: 'italic',
-                stroke: '#000000',
-                strokeThickness: 3
-            }
-        );
-        respawnText.setOrigin(0.5);
-        respawnText.setScrollFactor(0);
-        respawnText.setDepth(2001);
-        
-        // Pulse animation
-        this.tweens.add({
-            targets: deathText,
-            alpha: 0.5,
-            scale: 1.1,
-            duration: 400,
-            yoyo: true,
-            repeat: 2,
-            ease: 'Sine.easeInOut'
-        });
-        
-        // Fade out and respawn
-        this.time.delayedCall(2000, () => {
-            this.tweens.add({
-                targets: [overlay, deathText, livesText, respawnText],
-                alpha: 0,
-                duration: 500,
-                onComplete: () => {
-                    overlay.destroy();
-                    deathText.destroy();
-                    livesText.destroy();
-                    respawnText.destroy();
-                    this.respawnPlayer();
-                }
-            });
-        });
-    }
+
     
     createDeathMarker(x, y) {
         // Create spooky ghost marker
@@ -529,7 +475,7 @@ export class GameScene extends Phaser.Scene {
         this.livesContainer.setScrollFactor(0);
         this.livesContainer.setDepth(1000);
         
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 4; i++) {
             const icon = this.add.image(70 + (i * 45), 50, 'heart').setScale(0.9);
             this.livesContainer.add(icon);
             this.livesIcons.push(icon);
@@ -735,38 +681,6 @@ export class GameScene extends Phaser.Scene {
                     sectionText.destroy();
                 }
             });
-        }
-    }
-    
-    createLivesUI() {
-        this.livesIcons = [];
-        
-        // Create heart texture once
-        if (!this.textures.exists('heart')) {
-            const heart = this.add.graphics();
-            heart.fillStyle(0xff0000, 1);
-            heart.fillCircle(10, 5, 8);
-            heart.fillCircle(20, 5, 8);
-            heart.fillTriangle(2, 8, 28, 8, 15, 25);
-            heart.generateTexture('heart', 30, 30);
-            heart.destroy();
-        }
-        
-        // Create container for hearts that stays fixed
-        this.livesContainer = this.add.container(0, 0);
-        this.livesContainer.setScrollFactor(0);
-        this.livesContainer.setDepth(1000);
-        
-        for (let i = 0; i < 3; i++) {
-            const icon = this.add.image(70 + (i * 45), 50, 'heart').setScale(0.9);
-            this.livesContainer.add(icon);
-            this.livesIcons.push(icon);
-        }
-    }
-    
-    updateLivesUI() {
-        for (let i = 0; i < this.livesIcons.length; i++) {
-            this.livesIcons[i].setAlpha(i < this.lives ? 1 : 0.3);
         }
     }
     
@@ -2315,5 +2229,28 @@ export class GameScene extends Phaser.Scene {
             ease: 'Sine.easeOut',
             onComplete: () => ripple.destroy()
         });
+    }
+    
+    createCrows() {
+        // Create initial crows flying across the top
+        const crowCount = 3;
+        for (let i = 0; i < crowCount; i++) {
+            const direction = Math.random() > 0.5 ? 1 : -1;
+            const startX = direction === 1 ? -100 : LevelData.worldBounds.width + 100;
+            const y = Phaser.Math.Between(100, 300);
+            
+            const crow = new Crow(this, startX, y, direction);
+            this.crows.push(crow);
+        }
+    }
+    
+    spawnCrow() {
+        // Spawn a new crow from random side
+        const direction = Math.random() > 0.5 ? 1 : -1;
+        const startX = direction === 1 ? -100 : LevelData.worldBounds.width + 100;
+        const y = Phaser.Math.Between(100, 300);
+        
+        const crow = new Crow(this, startX, y, direction);
+        this.crows.push(crow);
     }
 }
