@@ -2263,16 +2263,17 @@ export class GameScene extends Phaser.Scene {
         const layer3Width = layer3Texture.source[0].width;
         const layer3Height = layer3Texture.source[0].height;
         
-        // Calculate scale to fit viewport width while maintaining aspect ratio
-        const layer3Scale = viewportWidth / layer3Width;
+        // Scale to 30% of viewport width while maintaining aspect ratio
+        const targetLayer3Width = viewportWidth * 0.3;
+        const layer3Scale = targetLayer3Width / layer3Width;
         const scaledLayer3Height = layer3Height * layer3Scale;
         
         // Create repeating layer 3 across the world at bottom
-        const layer3Count = Math.ceil(worldWidth / viewportWidth) + 2;
+        const layer3Count = Math.ceil(worldWidth / targetLayer3Width) + 2;
         for (let i = 0; i < layer3Count; i++) {
-            const layer3 = this.add.image(i * viewportWidth, worldHeight, 'bg-layer3');
+            const layer3 = this.add.image(i * targetLayer3Width, worldHeight, 'bg-layer3');
             layer3.setOrigin(0, 1); // Bottom-left origin
-            layer3.setDisplaySize(viewportWidth, scaledLayer3Height);
+            layer3.setDisplaySize(targetLayer3Width, scaledLayer3Height);
             layer3.setScrollFactor(0.6); // Faster parallax
             layer3.setDepth(-80);
         }
