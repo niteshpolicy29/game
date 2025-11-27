@@ -2286,10 +2286,10 @@ export class GameScene extends Phaser.Scene {
         const layer4Width = layer4Texture.source[0].width;
         const layer4Height = layer4Texture.source[0].height;
         
-        // Position layer 4 right above layer 3 (connected)
+        // Position layer 4 at the very bottom (below layer 3)
         const layer4 = this.add.tileSprite(
             0,
-            worldHeight - layer3Height - layer4Height, // Position above layer 3
+            worldHeight - layer4Height, // Position at bottom
             worldWidth * 2,
             layer4Height,
             'bg-layer4'
