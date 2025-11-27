@@ -2265,13 +2265,15 @@ export class GameScene extends Phaser.Scene {
         
         // Layer 3 - Ground/foreground layer (bottom, seamless tiling)
         
+        // Scale down to 70% of original height for lower profile
+        const scaledLayer3Height = layer3Height * 0.7;
+        
         // Use tileSprite for seamless horizontal repeating only
-        // Keep original size at bottom
         const layer3 = this.add.tileSprite(
             0, 
-            worldHeight - layer3Height, // Position at bottom
+            worldHeight - scaledLayer3Height, // Position at bottom
             worldWidth * 2, // Wide enough for smooth scrolling
-            layer3Height, // Original height
+            scaledLayer3Height, // 70% height
             'bg-layer3'
         );
         layer3.setOrigin(0, 0); // Top-left origin
@@ -2286,12 +2288,14 @@ export class GameScene extends Phaser.Scene {
         const layer4Width = layer4Texture.source[0].width;
         const layer4Height = layer4Texture.source[0].height;
         
-        // Keep original size at bottom
+        // Scale down to 70% of original height to match layer 3
+        const scaledLayer4Height = layer4Height * 0.7;
+        
         const layer4 = this.add.tileSprite(
             0,
-            worldHeight - layer4Height, // Position at bottom
+            worldHeight - scaledLayer4Height, // Position at bottom
             worldWidth * 2,
-            layer4Height, // Original height
+            scaledLayer4Height, // 70% height
             'bg-layer4'
         );
         layer4.setOrigin(0, 0);
