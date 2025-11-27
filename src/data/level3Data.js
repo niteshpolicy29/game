@@ -48,7 +48,7 @@ export const Level3Data = {
         // FLOATING PLATFORMS - HUGE WATER GAP 6 - REMOVED (water crossing)
     ],
     playerStart: { x: 240, y: 900 },
-    goal: { x: 7700, y: 950 },
+    goal: { x: 7700, y: 850 },
     checkpoints: [],
     enemies: [
         // Enemy on ground segment 1
