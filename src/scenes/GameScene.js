@@ -1911,8 +1911,8 @@ export class GameScene extends Phaser.Scene {
     }
     
     createParallaxBackground() {
-        const screenWidth = this.cameras.main.width;
-        const screenHeight = this.cameras.main.height;
+        const worldWidth = LevelData.worldBounds.width;
+        const worldHeight = LevelData.worldBounds.height;
         
         // Parallax layers with different scroll factors (slower = further away)
         // Only 5 layers available
@@ -1931,13 +1931,13 @@ export class GameScene extends Phaser.Scene {
                 return;
             }
             
-            // Create a repeating background sized to screen (not world)
-            // TileSprite will repeat as camera moves
+            // Create a repeating background that covers the entire world
+            // TileSprite will automatically repeat the texture
             const bg = this.add.tileSprite(
-                screenWidth / 2, 
-                screenHeight / 2, 
-                screenWidth * 3,  // 3x screen width for smooth scrolling
-                screenHeight, 
+                worldWidth / 2, 
+                worldHeight / 2, 
+                worldWidth * 2,  // Make it wider than world for parallax
+                worldHeight * 2, // Make it taller to ensure full coverage
                 layer.key
             );
             bg.setDepth(layer.depth);
