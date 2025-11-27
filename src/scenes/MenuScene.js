@@ -5,15 +5,24 @@ export class MenuScene extends Phaser.Scene {
         super({ key: 'MenuScene' });
     }
     
+    preload() {
+        // Load menu background image
+        this.load.image('menu-bg', '/start png/starting game page.png');
+    }
+    
     create() {
         const centerX = this.cameras.main.centerX;
         const centerY = this.cameras.main.centerY;
+        
+        // Add background image
+        const bg = this.add.image(centerX, centerY, 'menu-bg');
+        bg.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
         
         // Spooky Title
         const title = this.add.text(
             centerX,
             centerY - 200,
-            'HAUNTED PUMPKIN',
+            'NIGHTMELLOW',
             { fontFamily: 'October Crow, cursive', fontSize: '96px', fill: '#ff6600' }
         );
         title.setOrigin(0.5);

@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Kiro AI assistant significantly accelerated the development of Haunted Pumpkin, a Halloween-themed 2D platformer game built with Phaser 3. Through structured spec-driven development, rapid prototyping, and intelligent code generation, Kiro enabled the creation of a polished, feature-complete game in a fraction of the time traditional development would require.
+Kiro AI assistant significantly accelerated the development of Nightmellow, a Halloween-themed 2D platformer game built with Phaser 3. Through structured spec-driven development, rapid prototyping, and intelligent code generation, Kiro enabled the creation of a polished, feature-complete game in a fraction of the time traditional development would require.
 
 **Estimated Time Savings**: 60-70% reduction in development time
 **Lines of Code Generated**: ~3,200+ lines

@@ -575,7 +575,7 @@ export default {
 
 ## Conclusion
 
-The game is well-optimized for 60 FPS gameplay on modern hardware. Key optimizations include:
+Nightmellow is well-optimized for 60 FPS gameplay on modern hardware. Key optimizations include:
 
 1. **Static physics bodies** for platforms (no physics calculations)
 2. **Texture caching and reuse** (candy ball, marshmallow, jelly, enemies, crows)

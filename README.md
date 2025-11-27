@@ -1,4 +1,4 @@
-# Haunted Pumpkin - Ball Platformer Game
+# Nightmellow - Ball Platformer Game
 
 A Halloween-themed 2D platformer game built with Phaser 3 featuring a unique triple-form transformation system. Control a candy ball character that can transform into marshmallow and jelly forms, each with distinct physics. Navigate through haunted landscapes with water crossings, avoid cursed bats, and collect your candy before the night ends!
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Haunted Pumpkin is a 2D physics-based platformer built with Phaser 3. The architecture follows a scene-based structure with clear separation between game logic, rendering, and state management. The game uses Arcade Physics for collision detection and movement, with custom entity classes extending Phaser's built-in types.
+Nightmellow is a 2D physics-based platformer built with Phaser 3. The architecture follows a scene-based structure with clear separation between game logic, rendering, and state management. The game uses Arcade Physics for collision detection and movement, with custom entity classes extending Phaser's built-in types.
 
 The game features a unique triple-form transformation system where the player can switch between three distinct forms:
 - **Candy Ball**: Standard platforming with normal physics (480 max speed, -960 jump velocity)
