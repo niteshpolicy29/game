@@ -2242,14 +2242,15 @@ export class GameScene extends Phaser.Scene {
         layer1.setScrollFactor(0); // Fixed to camera
         layer1.setDepth(-100);
         
+        // Get layer 3 texture info first (needed for layer 2 positioning)
+        const layer3Texture = this.textures.get('bg-layer3');
+        const layer3Width = layer3Texture.source[0].width;
+        const layer3Height = layer3Texture.source[0].height;
+        
         // Layer 2 - Middle layer (single image, moves slowly with slight parallax)
         const layer2Texture = this.textures.get('bg-layer2');
         const layer2Width = layer2Texture.source[0].width;
         const layer2Height = layer2Texture.source[0].height;
-        
-        // Get layer 3 texture to align castle with ground
-        const layer3Texture = this.textures.get('bg-layer3');
-        const layer3Height = layer3Texture.source[0].height;
         
         // Scale to fit viewport height while maintaining aspect ratio
         const layer2Scale = viewportHeight / layer2Height;
@@ -2264,9 +2265,6 @@ export class GameScene extends Phaser.Scene {
         layer2.setDepth(-90);
         
         // Layer 3 - Ground/foreground layer (bottom, seamless tiling)
-        const layer3Texture = this.textures.get('bg-layer3');
-        const layer3Width = layer3Texture.source[0].width;
-        const layer3Height = layer3Texture.source[0].height;
         
         // Use tileSprite for seamless horizontal repeating only
         // TileSprite uses original texture dimensions, so we tile at original size
