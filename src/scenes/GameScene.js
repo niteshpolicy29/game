@@ -1931,17 +1931,26 @@ export class GameScene extends Phaser.Scene {
                 return;
             }
             
-            // Create a repeating background that covers the entire world
-            // TileSprite will automatically repeat the texture
-            const bg = this.add.tileSprite(
-                worldWidth / 2, 
-                worldHeight / 2, 
-                worldWidth * 2,  // Make it wider than world for parallax
-                worldHeight * 2, // Make it taller to ensure full coverage
-                layer.key
-            );
-            bg.setDepth(layer.depth);
-            bg.setScrollFactor(layer.scrollFactor);
+            // Get texture dimensions
+            const texture = this.textures.get(layer.key);
+            const bgWidth = texture.source[0].width;
+            const bgHeight = texture.source[0].height;
+            
+            // Calculate tiles needed based on scroll factor
+            // Slower scroll = fewer tiles needed
+            const effectiveWidth = worldWidth * (1 + layer.scrollFactor);
+            const tilesX = Math.ceil(effectiveWidth / bgWidth) + 1;
+            const tilesY = Math.ceil(worldHeight / bgHeight) + 1;
+            
+            // Create tiled background (limited number of tiles)
+            for (let x = 0; x < tilesX; x++) {
+                for (let y = 0; y < tilesY; y++) {
+                    const tile = this.add.image(x * bgWidth, y * bgHeight, layer.key);
+                    tile.setOrigin(0, 0);
+                    tile.setDepth(layer.depth);
+                    tile.setScrollFactor(layer.scrollFactor);
+                }
+            }
         });
     }
     
