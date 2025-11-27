@@ -2233,26 +2233,52 @@ export class GameScene extends Phaser.Scene {
     createParallaxBackground() {
         const worldWidth = LevelData.worldBounds.width;
         const worldHeight = LevelData.worldBounds.height;
+        const viewportWidth = this.cameras.main.width;
+        const viewportHeight = this.cameras.main.height;
         
-        // Layer 1 - Furthest back (slowest parallax)
-        const layer1 = this.add.tileSprite(0, 0, worldWidth, worldHeight, 'bg-layer1');
-        layer1.setOrigin(0, 0);
+        // Layer 1 - Sky background (fixed to camera, fills viewport)
+        const layer1 = this.add.image(viewportWidth / 2, viewportHeight / 2, 'bg-layer1');
+        layer1.setDisplaySize(viewportWidth, viewportHeight);
+        layer1.setScrollFactor(0); // Fixed to camera
         layer1.setDepth(-100);
-        layer1.setScrollFactor(0.1); // Moves very slowly
         
-        // Layer 2 - Middle layer
-        const layer2 = this.add.tileSprite(0, 0, worldWidth, worldHeight, 'bg-layer2');
-        layer2.setOrigin(0, 0);
-        layer2.setDepth(-90);
-        layer2.setScrollFactor(0.3); // Moves moderately
+        // Layer 2 - Middle layer (right side, repeating horizontally)
+        // Position on right side of viewport
+        const layer2Texture = this.textures.get('bg-layer2');
+        const layer2Width = layer2Texture.source[0].width;
+        const layer2Height = layer2Texture.source[0].height;
         
-        // Layer 3 - Closest layer (fastest parallax)
-        const layer3 = this.add.tileSprite(0, 0, worldWidth, worldHeight, 'bg-layer3');
-        layer3.setOrigin(0, 0);
-        layer3.setDepth(-80);
-        layer3.setScrollFactor(0.5); // Moves faster
+        // Scale to fit viewport height
+        const layer2Scale = viewportHeight / layer2Height;
+        const scaledLayer2Width = layer2Width * layer2Scale;
         
-        // Store references for potential animation
-        this.bgLayers = { layer1, layer2, layer3 };
+        // Create repeating layer 2 across the world
+        const layer2Count = Math.ceil(worldWidth / scaledLayer2Width) + 2;
+        for (let i = 0; i < layer2Count; i++) {
+            const layer2 = this.add.image(i * scaledLayer2Width, viewportHeight / 2, 'bg-layer2');
+            layer2.setOrigin(0, 0.5);
+            layer2.setDisplaySize(scaledLayer2Width, viewportHeight);
+            layer2.setScrollFactor(0.3); // Parallax effect
+            layer2.setDepth(-90);
+        }
+        
+        // Layer 3 - Ground/foreground layer (bottom, repeating horizontally)
+        const layer3Texture = this.textures.get('bg-layer3');
+        const layer3Width = layer3Texture.source[0].width;
+        const layer3Height = layer3Texture.source[0].height;
+        
+        // Scale to fit viewport width
+        const layer3Scale = viewportWidth / layer3Width;
+        const scaledLayer3Height = layer3Height * layer3Scale;
+        
+        // Create repeating layer 3 across the world at bottom
+        const layer3Count = Math.ceil(worldWidth / viewportWidth) + 2;
+        for (let i = 0; i < layer3Count; i++) {
+            const layer3 = this.add.image(i * viewportWidth, worldHeight, 'bg-layer3');
+            layer3.setOrigin(0, 1); // Bottom-left origin
+            layer3.setDisplaySize(viewportWidth, scaledLayer3Height);
+            layer3.setScrollFactor(0.6); // Faster parallax
+            layer3.setDepth(-80);
+        }
     }
 }
