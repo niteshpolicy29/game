@@ -2263,8 +2263,8 @@ export class GameScene extends Phaser.Scene {
         const layer3Width = layer3Texture.source[0].width;
         const layer3Height = layer3Texture.source[0].height;
         
-        // Scale to 30% of viewport width while maintaining aspect ratio
-        const targetLayer3Width = viewportWidth * 0.3;
+        // Scale to 60% of viewport width while maintaining aspect ratio
+        const targetLayer3Width = viewportWidth * 0.6;
         const layer3Scale = targetLayer3Width / layer3Width;
         const scaledLayer3Height = layer3Height * layer3Scale;
         
