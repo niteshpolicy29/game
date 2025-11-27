@@ -14,6 +14,9 @@ export class VictoryScene extends Phaser.Scene {
     
     create(data) {
         const completionTime = data.time || 0;
+        const currentLevel = data.level || 1;
+        const nextLevel = currentLevel + 1;
+        const hasNextLevel = nextLevel <= 2; // We have 2 levels
         
         // Dark background
         this.add.rectangle(
@@ -28,8 +31,8 @@ export class VictoryScene extends Phaser.Scene {
         // Victory text
         const victoryText = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY - 200,
-            'CANDY COLLECTED!',
+            this.cameras.main.centerY - 250,
+            'LEVEL ' + currentLevel + ' COMPLETE!',
             { fontFamily: 'October Crow, cursive', fontSize: '84px', fill: '#00ff00' }
         );
         victoryText.setOrigin(0.5);
@@ -38,7 +41,7 @@ export class VictoryScene extends Phaser.Scene {
         // Thank you message from kids
         const thankYouText = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY - 120,
+            this.cameras.main.centerY - 150,
             'Th-thank you sooo much for the candy!!',
             { fontSize: '38px', fill: '#ffaa00', fontStyle: 'italic', align: 'center' }
         );
@@ -57,23 +60,52 @@ export class VictoryScene extends Phaser.Scene {
         // Create happy kids
         this.createHappyKids();
         
-        // Restart instructions
-        const restartText = this.add.text(
-            this.cameras.main.centerX,
-            this.cameras.main.height - 120,
-            'Press SPACE to Play Again',
-            { fontSize: '32px', fill: '#00ff00', fontStyle: 'bold' }
-        );
-        restartText.setOrigin(0.5);
-        
-        this.tweens.add({
-            targets: restartText,
-            alpha: 0.2,
-            duration: 600,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
+        // Next level or restart instructions
+        if (hasNextLevel) {
+            const nextLevelText = this.add.text(
+                this.cameras.main.centerX,
+                this.cameras.main.height - 120,
+                'Press SPACE for Next Level',
+                { fontSize: '36px', fill: '#00ff00', fontStyle: 'bold' }
+            );
+            nextLevelText.setOrigin(0.5);
+            
+            this.tweens.add({
+                targets: nextLevelText,
+                alpha: 0.2,
+                duration: 600,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+            
+            // Input for next level
+            this.input.keyboard.once('keydown-SPACE', () => {
+                this.scene.start('GameScene', { level: nextLevel });
+            });
+        } else {
+            const restartText = this.add.text(
+                this.cameras.main.centerX,
+                this.cameras.main.height - 120,
+                'All Levels Complete! Press SPACE to Restart',
+                { fontSize: '32px', fill: '#00ff00', fontStyle: 'bold' }
+            );
+            restartText.setOrigin(0.5);
+            
+            this.tweens.add({
+                targets: restartText,
+                alpha: 0.2,
+                duration: 600,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+            
+            // Input to restart from level 1
+            this.input.keyboard.once('keydown-SPACE', () => {
+                this.scene.start('GameScene', { level: 1 });
+            });
+        }
         
         // Menu option
         const menuText = this.add.text(
@@ -85,12 +117,7 @@ export class VictoryScene extends Phaser.Scene {
         menuText.setOrigin(0.5);
         
         // Save completion
-        this.saveCompletion(completionTime);
-        
-        // Input
-        this.input.keyboard.once('keydown-SPACE', () => {
-            this.scene.start('GameScene');
-        });
+        this.saveCompletion(completionTime, currentLevel);
         
         this.input.keyboard.once('keydown-M', () => {
             this.scene.start('MenuScene');
@@ -137,10 +164,11 @@ export class VictoryScene extends Phaser.Scene {
         });
     }
     
-    saveCompletion(time) {
-        const bestTime = localStorage.getItem('bestTime');
+    saveCompletion(time, level) {
+        const bestTimeKey = `bestTime_level${level}`;
+        const bestTime = localStorage.getItem(bestTimeKey);
         if (!bestTime || time < parseInt(bestTime)) {
-            localStorage.setItem('bestTime', time.toString());
+            localStorage.setItem(bestTimeKey, time.toString());
         }
     }
 }

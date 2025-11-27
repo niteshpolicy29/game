@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { LevelData } from '../data/levelData.js';
+import { Level2Data } from '../data/level2Data.js';
 import { PlatformManager } from '../entities/PlatformManager.js';
 import { Player } from '../entities/Player.js';
 import { Goal } from '../entities/Goal.js';
@@ -12,11 +13,22 @@ export class GameScene extends Phaser.Scene {
         super({ key: 'GameScene' });
     }
     
-    create() {
+    create(data) {
         console.log('GameScene create started');
         
+        // Get current level (default to 1)
+        this.currentLevel = data.level || 1;
+        
+        // Select level data
+        const levelDataMap = {
+            1: LevelData,
+            2: Level2Data
+        };
+        
+        this.levelData = levelDataMap[this.currentLevel] || LevelData;
+        
         // Set world bounds
-        this.physics.world.setBounds(0, 0, LevelData.worldBounds.width, LevelData.worldBounds.height);
+        this.physics.world.setBounds(0, 0, this.levelData.worldBounds.width, this.levelData.worldBounds.height);
         
         // Create parallax background layers
         this.createParallaxBackground();
@@ -25,24 +37,24 @@ export class GameScene extends Phaser.Scene {
         this.lives = 4;
         this.isRespawning = false;
         this.isFalling = false;
-        this.currentCheckpoint = LevelData.playerStart;
+        this.currentCheckpoint = this.levelData.playerStart;
         this.goalReached = false;
         
         // Track game time
         this.startTime = this.time.now;
         
         // Create platforms
-        this.platformManager = new PlatformManager(this, LevelData);
+        this.platformManager = new PlatformManager(this, this.levelData);
         
         // Create player (moon position will be calculated in background creation)
-        this.player = new Player(this, LevelData.playerStart.x, LevelData.playerStart.y, 
-            LevelData.worldBounds.width * 0.75, LevelData.worldBounds.height * 0.2);
+        this.player = new Player(this, this.levelData.playerStart.x, this.levelData.playerStart.y, 
+            this.levelData.worldBounds.width * 0.75, this.levelData.worldBounds.height * 0.2);
         
         // Create enemies
         this.enemies = this.physics.add.group();
-        console.log('Enemy data:', LevelData.enemies);
-        if (LevelData.enemies && LevelData.enemies.length > 0) {
-            LevelData.enemies.forEach((enemyData, index) => {
+        console.log('Enemy data:', this.levelData.enemies);
+        if (this.levelData.enemies && this.levelData.enemies.length > 0) {
+            this.levelData.enemies.forEach((enemyData, index) => {
                 try {
                     console.log(`Creating enemy ${index} at`, enemyData);
                     const enemy = new Enemy(this, enemyData.x, enemyData.y, enemyData.patrolStart, enemyData.patrolEnd);
@@ -57,13 +69,13 @@ export class GameScene extends Phaser.Scene {
         
         // Create checkpoints
         this.checkpoints = this.physics.add.group();
-        LevelData.checkpoints.forEach(cpData => {
+        this.levelData.checkpoints.forEach(cpData => {
             const checkpoint = new Checkpoint(this, cpData.x, cpData.y);
             this.checkpoints.add(checkpoint);
         });
         
         // Create goal
-        this.goal = new Goal(this, LevelData.goal.x, LevelData.goal.y);
+        this.goal = new Goal(this, this.levelData.goal.x, this.levelData.goal.y);
         
         // Create flying crows in background
         this.crows = [];
@@ -716,7 +728,7 @@ export class GameScene extends Phaser.Scene {
                         
                         // Wait a moment then show victory
                         this.time.delayedCall(800, () => {
-                            this.scene.start('VictoryScene', { time: completionTime });
+                            this.scene.start('VictoryScene', { time: completionTime, level: this.currentLevel });
                         });
                     }
                 });
@@ -1911,8 +1923,8 @@ export class GameScene extends Phaser.Scene {
     }
     
     createParallaxBackground() {
-        const worldWidth = LevelData.worldBounds.width;
-        const worldHeight = LevelData.worldBounds.height;
+        const worldWidth = this.levelData.worldBounds.width;
+        const worldHeight = this.levelData.worldBounds.height;
         
         // Parallax layers with different scroll factors (slower = further away)
         // Only 5 layers available
@@ -1957,7 +1969,7 @@ export class GameScene extends Phaser.Scene {
     createWaterAreas() {
         this.waterBodies = [];
         
-        LevelData.waterAreas.forEach(waterData => {
+        this.levelData.waterAreas.forEach(waterData => {
             // Create main water body with gradient effect
             const waterGraphics = this.add.graphics();
             
