@@ -6,10 +6,13 @@ export class MenuScene extends Phaser.Scene {
     }
     
     create() {
+        const centerX = this.cameras.main.centerX;
+        const centerY = this.cameras.main.centerY;
+        
         // Spooky Title
         const title = this.add.text(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY - 100,
+            centerX,
+            centerY - 200,
             'HAUNTED PUMPKIN',
             { fontFamily: 'October Crow, cursive', fontSize: '96px', fill: '#ff6600' }
         );
@@ -18,35 +21,77 @@ export class MenuScene extends Phaser.Scene {
         
         // Subtitle
         const subtitle = this.add.text(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY,
+            centerX,
+            centerY - 100,
             'ESCAPE THE DARKNESS',
             { fontSize: '48px', fill: '#8b00ff', fontStyle: 'italic' }
         );
         subtitle.setOrigin(0.5);
         
-        // Instructions
-        const instructions = this.add.text(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY + 100,
-            'Press SPACE to Start',
-            { fontSize: '36px', fill: '#00ff00' }
-        );
-        instructions.setOrigin(0.5);
-        
-        // Eerie blinking effect
-        this.tweens.add({
-            targets: instructions,
-            alpha: 0.2,
-            duration: 600,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-        
-        // Input
-        this.input.keyboard.once('keydown-SPACE', () => {
+        // Create menu buttons
+        this.createButton(centerX, centerY + 20, 'START GAME', () => {
             this.scene.start('TutorialScene');
         });
+        
+        this.createButton(centerX, centerY + 100, 'HOW TO PLAY', () => {
+            this.scene.start('TutorialScene');
+        });
+        
+        this.createButton(centerX, centerY + 180, 'OPTIONS', () => {
+            this.scene.start('OptionsScene');
+        });
+        
+        // Version or credit text
+        const credits = this.add.text(
+            centerX,
+            this.cameras.main.height - 40,
+            'Built with Phaser 3',
+            { fontSize: '20px', fill: '#666666' }
+        );
+        credits.setOrigin(0.5);
+    }
+    
+    createButton(x, y, text, callback) {
+        // Button background
+        const buttonWidth = 400;
+        const buttonHeight = 60;
+        
+        const bg = this.add.rectangle(x, y, buttonWidth, buttonHeight, 0x000000, 0.7);
+        bg.setStrokeStyle(3, 0xff6600);
+        
+        // Button text
+        const buttonText = this.add.text(x, y, text, {
+            fontSize: '32px',
+            fill: '#ff6600',
+            fontStyle: 'bold'
+        });
+        buttonText.setOrigin(0.5);
+        
+        // Make interactive
+        bg.setInteractive({ useHandCursor: true });
+        
+        // Hover effects
+        bg.on('pointerover', () => {
+            bg.setFillStyle(0xff6600, 0.3);
+            buttonText.setScale(1.1);
+        });
+        
+        bg.on('pointerout', () => {
+            bg.setFillStyle(0x000000, 0.7);
+            buttonText.setScale(1);
+        });
+        
+        bg.on('pointerdown', () => {
+            bg.setFillStyle(0xff6600, 0.5);
+            buttonText.setScale(0.95);
+        });
+        
+        bg.on('pointerup', () => {
+            bg.setFillStyle(0xff6600, 0.3);
+            buttonText.setScale(1.1);
+            callback();
+        });
+        
+        return { bg, text: buttonText };
     }
 }
