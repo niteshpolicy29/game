@@ -19,6 +19,7 @@ export class BootScene extends Phaser.Scene {
         this.load.image('bg-layer1', '/game area background/layer1.png');
         this.load.image('bg-layer2', '/game area background/layer2.png');
         this.load.image('bg-layer3', '/game area background/layer3.png');
+        this.load.image('bg-layer4', '/game area background/layer4.png');
     }
     
     create() {

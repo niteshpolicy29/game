@@ -2280,5 +2280,25 @@ export class GameScene extends Phaser.Scene {
         
         // Store reference for potential animation
         this.layer3Tile = layer3;
+        
+        // Layer 4 - Foreground layer (connected with layer 3, closest to player)
+        const layer4Texture = this.textures.get('bg-layer4');
+        const layer4Width = layer4Texture.source[0].width;
+        const layer4Height = layer4Texture.source[0].height;
+        
+        // Position layer 4 right above layer 3 (connected)
+        const layer4 = this.add.tileSprite(
+            0,
+            worldHeight - layer3Height - layer4Height, // Position above layer 3
+            worldWidth * 2,
+            layer4Height,
+            'bg-layer4'
+        );
+        layer4.setOrigin(0, 0);
+        layer4.setScrollFactor(0.8); // Fastest parallax (closest to player)
+        layer4.setDepth(-70);
+        
+        // Store reference
+        this.layer4Tile = layer4;
     }
 }
