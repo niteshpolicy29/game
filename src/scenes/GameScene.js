@@ -2265,13 +2265,15 @@ export class GameScene extends Phaser.Scene {
         
         // Layer 3 - Ground/foreground layer (bottom, seamless tiling)
         
+        // Scale layer 3 to be taller (2x height to reach castle)
+        const scaledLayer3Height = layer3Height * 2;
+        
         // Use tileSprite for seamless horizontal repeating only
-        // TileSprite uses original texture dimensions, so we tile at original size
         const layer3 = this.add.tileSprite(
             0, 
-            worldHeight - layer3Height, // Position at bottom
+            worldHeight - scaledLayer3Height, // Position at bottom with increased height
             worldWidth * 2, // Wide enough for smooth scrolling
-            layer3Height, // Original height (no vertical tiling)
+            scaledLayer3Height, // Doubled height
             'bg-layer3'
         );
         layer3.setOrigin(0, 0); // Top-left origin
@@ -2281,21 +2283,24 @@ export class GameScene extends Phaser.Scene {
         // Store reference for potential animation
         this.layer3Tile = layer3;
         
-        // Layer 4 - Foreground layer (connected with layer 3, closest to player)
+        // Layer 4 - Foreground layer (same properties as layer 3)
         const layer4Texture = this.textures.get('bg-layer4');
         const layer4Width = layer4Texture.source[0].width;
         const layer4Height = layer4Texture.source[0].height;
         
-        // Position layer 4 at the very bottom (below layer 3)
+        // Scale layer 4 to match layer 3 (2x height)
+        const scaledLayer4Height = layer4Height * 2;
+        
+        // Position layer 4 at the very bottom with same properties as layer 3
         const layer4 = this.add.tileSprite(
             0,
-            worldHeight - layer4Height, // Position at bottom
+            worldHeight - scaledLayer4Height, // Position at bottom with increased height
             worldWidth * 2,
-            layer4Height,
+            scaledLayer4Height, // Doubled height
             'bg-layer4'
         );
         layer4.setOrigin(0, 0);
-        layer4.setScrollFactor(0.8); // Fastest parallax (closest to player)
+        layer4.setScrollFactor(0.6); // Same as layer 3 for synchronized movement
         layer4.setDepth(-70);
         
         // Store reference
