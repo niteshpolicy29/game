@@ -2258,10 +2258,6 @@ export class GameScene extends Phaser.Scene {
         layer2.setScrollFactor(0.1); // Very slow parallax - barely moves
         layer2.setDepth(-90);
         
-        // Improve rendering quality
-        layer2.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-        layer2.setAntiAlias(true);
-        
         // Layer 3 - Ground/foreground layer (bottom, repeating horizontally)
         const layer3Texture = this.textures.get('bg-layer3');
         const layer3Width = layer3Texture.source[0].width;
@@ -2280,10 +2276,6 @@ export class GameScene extends Phaser.Scene {
             layer3.setDisplaySize(targetLayer3Width, scaledLayer3Height);
             layer3.setScrollFactor(0.6); // Faster parallax
             layer3.setDepth(-80);
-            
-            // Improve rendering quality
-            layer3.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-            layer3.setAntiAlias(true);
         }
     }
 }
