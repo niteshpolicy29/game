@@ -88,5 +88,5 @@ export const Level3Data = {
         // Gap: 6105 to 6880 = 775 units
         { x: 6492.5, y: 1044, width: 775, height: 48 }
     ],
-    worldBounds: { width: 8585, height: 1080 }
+    worldBounds: { width: 9500, height: 1080 }
 };
