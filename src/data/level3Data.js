@@ -20,10 +20,7 @@ export const Level3Data = {
         { x: 5855, y: 1044, width: 500, height: 72 },
         
         // Ground segment 6 (after huge water gap - 850 units)
-        { x: 7205, y: 1044, width: 650, height: 72 },
-        
-        // Final ground segment (after small gap - 380 units)
-        { x: 8235, y: 1044, width: 700, height: 72 },
+        { x: 7205, y: 1044, width: 1200, height: 72 },
         
         // FLOATING PLATFORMS - SMALL GAP 1 (350 units)
         { x: 850, y: 900, width: 150, height: 48 },
@@ -49,12 +46,9 @@ export const Level3Data = {
         { x: 5760, y: 820, width: 150, height: 48 },
         
         // FLOATING PLATFORMS - HUGE WATER GAP 6 - REMOVED (water crossing)
-        
-        // FLOATING PLATFORMS - SMALL GAP 7 (380 units)
-        { x: 7720, y: 900, width: 150, height: 48 },
     ],
     playerStart: { x: 240, y: 900 },
-    goal: { x: 8450, y: 950 },
+    goal: { x: 7700, y: 950 },
     checkpoints: [],
     enemies: [
         // Enemy on ground segment 1
@@ -73,8 +67,8 @@ export const Level3Data = {
         { x: 6000, y: 900, patrolStart: 5855, patrolEnd: 6205 },
         // Enemy on ground segment 6
         { x: 7380, y: 900, patrolStart: 7205, patrolEnd: 7605 },
-        // Enemy on final ground
-        { x: 8400, y: 900, patrolStart: 8235, patrolEnd: 8635 }
+        // Enemy on final part of segment 6
+        { x: 7650, y: 900, patrolStart: 7500, patrolEnd: 7800 }
     ],
     waterAreas: [
         // First water section - fills gap between segments 2 and 3
@@ -88,5 +82,5 @@ export const Level3Data = {
         // Gap: 6105 to 6880 = 775 units
         { x: 6492.5, y: 1044, width: 775, height: 48 }
     ],
-    worldBounds: { width: 9500, height: 1080 }
+    worldBounds: { width: 8400, height: 1080 }
 };
