@@ -1906,12 +1906,129 @@ export class GameScene extends Phaser.Scene {
         }
     }
     
+    createParallaxBackground() {
+        const worldWidth = LevelData.worldBounds.width;
+        const worldHeight = LevelData.worldBounds.height;
+        
+        // Parallax layers with different scroll factors (slower = further away)
+        const layers = [
+            { key: 'bg-layer-1', scrollFactor: 0.1, depth: -100 },  // Furthest back
+            { key: 'bg-layer-2', scrollFactor: 0.2, depth: -90 },
+            { key: 'bg-layer-3', scrollFactor: 0.3, depth: -80 },
+            { key: 'bg-layer-4', scrollFactor: 0.4, depth: -70 },
+            { key: 'bg-layer-5', scrollFactor: 0.6, depth: -60 },
+            { key: 'bg-layer-6', scrollFactor: 0.8, depth: -50 }   // Closest to foreground
+        ];
+        
+        layers.forEach(layer => {
+            // Get texture dimensions
+            const texture = this.textures.get(layer.key);
+            const bgWidth = texture.source[0].width;
+            const bgHeight = texture.source[0].height;
+            
+            // Calculate how many tiles needed (add extra for parallax scrolling)
+            const tilesX = Math.ceil(worldWidth / bgWidth) + 3;
+            const tilesY = Math.ceil(worldHeight / bgHeight) + 1;
+            
+            // Create tiled background for this layer
+            for (let x = 0; x < tilesX; x++) {
+                for (let y = 0; y < tilesY; y++) {
+                    const tile = this.add.image(x * bgWidth, y * bgHeight, layer.key);
+                    tile.setOrigin(0, 0);
+                    tile.setDepth(layer.depth);
+                    tile.setScrollFactor(layer.scrollFactor);
+                }
+            }
+        });
+    }
+    
     createWaterAreas() {
         this.waterBodies = [];
         
         LevelData.waterAreas.forEach(waterData => {
-            // Water visuals removed - keeping only physics bounds
-            // No visual water graphics, waves, shimmer, or ripples
+            // Create main water body with gradient effect
+            const waterGraphics = this.add.graphics();
+            
+            // Draw water with gradient (darker at bottom, lighter at top)
+            const left = waterData.x - waterData.width / 2;
+            const top = waterData.y - waterData.height / 2;
+            
+            // Bottom layer - darker blue
+            waterGraphics.fillStyle(0x1a4d7a, 0.7);
+            waterGraphics.fillRect(left, top + 20, waterData.width, waterData.height - 20);
+            
+            // Middle layer - medium blue
+            waterGraphics.fillStyle(0x2266aa, 0.6);
+            waterGraphics.fillRect(left, top + 10, waterData.width, waterData.height - 30);
+            
+            // Top layer - lighter blue
+            waterGraphics.fillStyle(0x3388cc, 0.5);
+            waterGraphics.fillRect(left, top, waterData.width, 20);
+            
+            waterGraphics.setDepth(1);
+            
+            // Add animated wave overlay
+            const wave1 = this.add.rectangle(
+                waterData.x,
+                waterData.y - waterData.height / 2 + 8,
+                waterData.width,
+                16,
+                0x5599dd,
+                0.4
+            );
+            wave1.setDepth(2);
+            
+            this.tweens.add({
+                targets: wave1,
+                alpha: 0.2,
+                scaleY: 1.2,
+                duration: 2000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+            
+            // Add surface shimmer/reflection
+            const shimmer = this.add.rectangle(
+                waterData.x,
+                waterData.y - waterData.height / 2 + 3,
+                waterData.width,
+                6,
+                0x88ccff,
+                0.5
+            );
+            shimmer.setDepth(2);
+            
+            this.tweens.add({
+                targets: shimmer,
+                alpha: 0.3,
+                scaleX: 1.03,
+                duration: 1800,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+            
+            // Add subtle ripple effect
+            const ripple = this.add.ellipse(
+                waterData.x,
+                waterData.y - waterData.height / 2 + 10,
+                waterData.width * 0.8,
+                12,
+                0x6699ff,
+                0.3
+            );
+            ripple.setDepth(1);
+            
+            this.tweens.add({
+                targets: ripple,
+                scaleX: 1.05,
+                alpha: 0.15,
+                duration: 2200,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
             
             // Store water bounds for physics
             this.waterBodies.push({
@@ -2147,81 +2264,5 @@ export class GameScene extends Phaser.Scene {
         
         const crow = new Crow(this, startX, y, direction);
         this.crows.push(crow);
-    }
-    
-    createParallaxBackground() {
-        const worldWidth = LevelData.worldBounds.width;
-        const worldHeight = LevelData.worldBounds.height;
-        const viewportWidth = this.cameras.main.width;
-        const viewportHeight = this.cameras.main.height;
-        
-        // Layer 1 - Sky background (fixed to camera, fills viewport)
-        const layer1 = this.add.image(viewportWidth / 2, viewportHeight / 2, 'bg-layer1');
-        layer1.setDisplaySize(viewportWidth, viewportHeight);
-        layer1.setScrollFactor(0); // Fixed to camera
-        layer1.setDepth(-100);
-        
-        // Get layer 3 texture info first (needed for layer 2 positioning)
-        const layer3Texture = this.textures.get('bg-layer3');
-        const layer3Width = layer3Texture.source[0].width;
-        const layer3Height = layer3Texture.source[0].height;
-        
-        // Layer 2 - Middle layer (single image, moves slowly with slight parallax)
-        const layer2Texture = this.textures.get('bg-layer2');
-        const layer2Width = layer2Texture.source[0].width;
-        const layer2Height = layer2Texture.source[0].height;
-        
-        // Scale to fit viewport height while maintaining aspect ratio
-        const layer2Scale = viewportHeight / layer2Height;
-        const scaledLayer2Width = layer2Width * layer2Scale;
-        
-        // Position at right side, at viewport bottom (will align with ground due to scroll factor)
-        const layer2 = this.add.image(viewportWidth, viewportHeight, 'bg-layer2');
-        layer2.setOrigin(1, 1); // Right-bottom origin
-        layer2.setDisplaySize(scaledLayer2Width, viewportHeight);
-        layer2.setScrollFactor(0.1); // Very slow parallax - barely moves
-        layer2.setDepth(-90);
-        
-        // Layer 3 - Ground/foreground layer (bottom, seamless tiling)
-        
-        // Scale down to 70% of original height for lower profile
-        const scaledLayer3Height = layer3Height * 0.7;
-        
-        // Use tileSprite for seamless horizontal repeating only
-        const layer3 = this.add.tileSprite(
-            0, 
-            worldHeight - scaledLayer3Height, // Position at bottom
-            worldWidth * 2, // Wide enough for smooth scrolling
-            scaledLayer3Height, // 70% height
-            'bg-layer3'
-        );
-        layer3.setOrigin(0, 0); // Top-left origin
-        layer3.setScrollFactor(0.6); // Faster parallax
-        layer3.setDepth(-80);
-        
-        // Store reference for potential animation
-        this.layer3Tile = layer3;
-        
-        // Layer 4 - Foreground layer (same properties as layer 3)
-        const layer4Texture = this.textures.get('bg-layer4');
-        const layer4Width = layer4Texture.source[0].width;
-        const layer4Height = layer4Texture.source[0].height;
-        
-        // Scale down to 70% of original height to match layer 3
-        const scaledLayer4Height = layer4Height * 0.7;
-        
-        const layer4 = this.add.tileSprite(
-            0,
-            worldHeight - scaledLayer4Height, // Position at bottom
-            worldWidth * 2,
-            scaledLayer4Height, // 70% height
-            'bg-layer4'
-        );
-        layer4.setOrigin(0, 0);
-        layer4.setScrollFactor(0.6); // Same as layer 3 for synchronized movement
-        layer4.setDepth(-70);
-        
-        // Store reference
-        this.layer4Tile = layer4;
     }
 }

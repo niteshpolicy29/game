@@ -16,34 +16,16 @@ export class BootScene extends Phaser.Scene {
         loadingText.setOrigin(0.5);
         
         // Load parallax background layers
-        this.load.image('bg-layer1', '/game area background/layer1.png');
-        this.load.image('bg-layer2', '/game area background/layer2.png');
-        this.load.image('bg-layer3', '/game area background/layer3.png');
-        this.load.image('bg-layer4', '/game area background/layer4.png');
+        this.load.image('bg-layer-1', '/game area background/1.png');
+        this.load.image('bg-layer-2', '/game area background/2.png');
+        this.load.image('bg-layer-3', '/game area background/3.png');
+        this.load.image('bg-layer-4', '/game area background/4.png');
+        this.load.image('bg-layer-5', '/game area background/5.png');
+        this.load.image('bg-layer-6', '/game area background/6.png');
     }
     
     create() {
-        // Wait for font to load before transitioning
-        this.waitForFont();
-    }
-    
-    waitForFont() {
-        // Check if font is loaded
-        if (document.fonts && document.fonts.check) {
-            document.fonts.ready.then(() => {
-                // Font is loaded, transition to menu
-                this.scene.start('MenuScene');
-            }).catch(() => {
-                // If font loading fails, still proceed after a short delay
-                this.time.delayedCall(500, () => {
-                    this.scene.start('MenuScene');
-                });
-            });
-        } else {
-            // Fallback for browsers without font loading API
-            this.time.delayedCall(500, () => {
-                this.scene.start('MenuScene');
-            });
-        }
+        // Transition to menu
+        this.scene.start('MenuScene');
     }
 }
