@@ -7,34 +7,32 @@ export class PlatformManager {
     
     createPlatforms(platformData) {
         platformData.forEach((data, index) => {
-            // Use ground texture if available, otherwise fallback to rectangle
-            let platform;
+            // Create a dark background rectangle first
+            const bgRect = this.scene.add.rectangle(
+                data.x,
+                data.y,
+                data.width,
+                data.height,
+                0x3d2817 // Dark brown background
+            );
+            this.scene.physics.add.existing(bgRect, true);
+            this.platforms.add(bgRect);
             
+            // Then add ground texture on top if available
             if (this.scene.textures.exists('ground-texture')) {
-                // Create tiled sprite for ground texture
-                platform = this.scene.add.tileSprite(
+                const groundTexture = this.scene.add.tileSprite(
                     data.x,
                     data.y,
                     data.width,
                     data.height,
                     'ground-texture'
                 );
+                groundTexture.setDepth(bgRect.depth + 0.1);
             } else {
-                // Fallback: Spooky dark wood platforms
-                platform = this.scene.add.rectangle(
-                    data.x, 
-                    data.y, 
-                    data.width, 
-                    data.height, 
-                    0x2d1b00 // Dark brown wood
-                );
-                
-                // Add eerie purple glow outline
-                platform.setStrokeStyle(4, 0x8b00ff, 0.6);
+                console.warn('Ground texture not found, using solid color');
+                // Add eerie purple glow outline to background
+                bgRect.setStrokeStyle(4, 0x8b00ff, 0.6);
             }
-            
-            this.scene.physics.add.existing(platform, true);
-            this.platforms.add(platform);
         });
     }
     
