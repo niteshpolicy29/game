@@ -1911,16 +1911,22 @@ export class GameScene extends Phaser.Scene {
         const screenHeight = this.cameras.main.height;
         
         // Parallax layers with different scroll factors (slower = further away)
+        // Only 5 layers available
         const layers = [
             { key: 'bg-layer-1', scrollFactor: 0.1, depth: -100 },  // Furthest back
             { key: 'bg-layer-2', scrollFactor: 0.2, depth: -90 },
-            { key: 'bg-layer-3', scrollFactor: 0.3, depth: -80 },
-            { key: 'bg-layer-4', scrollFactor: 0.4, depth: -70 },
-            { key: 'bg-layer-5', scrollFactor: 0.6, depth: -60 },
-            { key: 'bg-layer-6', scrollFactor: 0.8, depth: -50 }   // Closest to foreground
+            { key: 'bg-layer-3', scrollFactor: 0.4, depth: -80 },
+            { key: 'bg-layer-4', scrollFactor: 0.6, depth: -70 },
+            { key: 'bg-layer-5', scrollFactor: 0.8, depth: -60 }    // Closest to foreground
         ];
         
         layers.forEach(layer => {
+            // Check if texture exists before creating
+            if (!this.textures.exists(layer.key)) {
+                console.warn(`Background layer ${layer.key} not found, skipping`);
+                return;
+            }
+            
             // Create a repeating background sized to screen (not world)
             // TileSprite will repeat as camera moves
             const bg = this.add.tileSprite(

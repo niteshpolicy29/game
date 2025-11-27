@@ -15,13 +15,12 @@ export class BootScene extends Phaser.Scene {
         );
         loadingText.setOrigin(0.5);
         
-        // Load parallax background layers
+        // Load parallax background layers (only 5 layers available)
         this.load.image('bg-layer-1', '/game area background/1.png');
         this.load.image('bg-layer-2', '/game area background/2.png');
         this.load.image('bg-layer-3', '/game area background/3.png');
         this.load.image('bg-layer-4', '/game area background/4.png');
         this.load.image('bg-layer-5', '/game area background/5.png');
-        this.load.image('bg-layer-6', '/game area background/6.png');
     }
     
     create() {
