@@ -54,7 +54,7 @@ export const Level3Data = {
         { x: 7720, y: 900, width: 150, height: 48 },
     ],
     playerStart: { x: 240, y: 900 },
-    goal: { x: 8450, y: 850 },
+    goal: { x: 8400, y: 900 },
     checkpoints: [],
     enemies: [
         // Enemy on ground segment 1
