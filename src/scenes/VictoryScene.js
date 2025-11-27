@@ -16,7 +16,7 @@ export class VictoryScene extends Phaser.Scene {
         const completionTime = data.time || 0;
         const currentLevel = data.level || 1;
         const nextLevel = currentLevel + 1;
-        const hasNextLevel = nextLevel <= 2; // We have 2 levels
+        const hasNextLevel = nextLevel <= 4; // We have 4 levels
         
         // Dark background
         this.add.rectangle(

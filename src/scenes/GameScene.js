@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { LevelData } from '../data/levelData.js';
 import { Level2Data } from '../data/level2Data.js';
+import { Level3Data } from '../data/level3Data.js';
+import { Level4Data } from '../data/level4Data.js';
 import { PlatformManager } from '../entities/PlatformManager.js';
 import { Player } from '../entities/Player.js';
 import { Goal } from '../entities/Goal.js';
@@ -22,7 +24,9 @@ export class GameScene extends Phaser.Scene {
         // Select level data
         const levelDataMap = {
             1: LevelData,
-            2: Level2Data
+            2: Level2Data,
+            3: Level3Data,
+            4: Level4Data
         };
         
         this.levelData = levelDataMap[this.currentLevel] || LevelData;
