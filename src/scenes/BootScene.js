@@ -22,7 +22,27 @@ export class BootScene extends Phaser.Scene {
     }
     
     create() {
-        // Transition to menu
-        this.scene.start('MenuScene');
+        // Wait for font to load before transitioning
+        this.waitForFont();
+    }
+    
+    waitForFont() {
+        // Check if font is loaded
+        if (document.fonts && document.fonts.check) {
+            document.fonts.ready.then(() => {
+                // Font is loaded, transition to menu
+                this.scene.start('MenuScene');
+            }).catch(() => {
+                // If font loading fails, still proceed after a short delay
+                this.time.delayedCall(500, () => {
+                    this.scene.start('MenuScene');
+                });
+            });
+        } else {
+            // Fallback for browsers without font loading API
+            this.time.delayedCall(500, () => {
+                this.scene.start('MenuScene');
+            });
+        }
     }
 }
