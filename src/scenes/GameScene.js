@@ -18,32 +18,8 @@ export class GameScene extends Phaser.Scene {
         // Set world bounds
         this.physics.world.setBounds(0, 0, LevelData.worldBounds.width, LevelData.worldBounds.height);
         
-        // Create tiled background for better quality (no stretching)
-        const bgTexture = this.textures.get('background');
-        const bgWidth = bgTexture.source[0].width;
-        const bgHeight = bgTexture.source[0].height;
-        
-        // Calculate how many tiles we need
-        const tilesX = Math.ceil(LevelData.worldBounds.width / bgWidth) + 1;
-        const tilesY = Math.ceil(LevelData.worldBounds.height / bgHeight) + 1;
-        
-        // Create tiled background
-        for (let x = 0; x < tilesX; x++) {
-            for (let y = 0; y < tilesY; y++) {
-                const tile = this.add.image(x * bgWidth, y * bgHeight, 'background');
-                tile.setOrigin(0, 0);
-                tile.setDepth(-100);
-            }
-        }
-        
-        // Create spooky Halloween night background (procedural elements on top)
-        // Commented out to show bg.png image instead
-        // try {
-        //     this.createHalloweenBackground();
-        //     console.log('Background created');
-        // } catch (error) {
-        //     console.error('Error creating background:', error);
-        // }
+        // Create parallax background layers
+        this.createParallaxBackground();
         
         // Initialize lives system
         this.lives = 4;
@@ -2252,5 +2228,31 @@ export class GameScene extends Phaser.Scene {
         
         const crow = new Crow(this, startX, y, direction);
         this.crows.push(crow);
+    }
+    
+    createParallaxBackground() {
+        const worldWidth = LevelData.worldBounds.width;
+        const worldHeight = LevelData.worldBounds.height;
+        
+        // Layer 1 - Furthest back (slowest parallax)
+        const layer1 = this.add.tileSprite(0, 0, worldWidth, worldHeight, 'bg-layer1');
+        layer1.setOrigin(0, 0);
+        layer1.setDepth(-100);
+        layer1.setScrollFactor(0.1); // Moves very slowly
+        
+        // Layer 2 - Middle layer
+        const layer2 = this.add.tileSprite(0, 0, worldWidth, worldHeight, 'bg-layer2');
+        layer2.setOrigin(0, 0);
+        layer2.setDepth(-90);
+        layer2.setScrollFactor(0.3); // Moves moderately
+        
+        // Layer 3 - Closest layer (fastest parallax)
+        const layer3 = this.add.tileSprite(0, 0, worldWidth, worldHeight, 'bg-layer3');
+        layer3.setOrigin(0, 0);
+        layer3.setDepth(-80);
+        layer3.setScrollFactor(0.5); // Moves faster
+        
+        // Store references for potential animation
+        this.bgLayers = { layer1, layer2, layer3 };
     }
 }
