@@ -100,25 +100,102 @@ export class GameOverScene extends Phaser.Scene {
             const kid = this.add.image(pos.x, pos.y, chibiKey);
             kid.setScale(0.4); // All same size now
             
-            // Add tears animation
-            this.createTears(pos.x, pos.y - 80, index);
+            // Calculate eye positions based on chibi image
+            // Chibis are roughly 400px tall in original, scaled to 0.4 = 160px
+            // Eyes are approximately at 30% from top of head
+            const chibiHeight = 160; // Approximate scaled height
+            const eyeY = pos.y - (chibiHeight * 0.3); // Eyes position from center
+            
+            // Add tears animation from both eyes
+            this.createTears(pos.x, eyeY, index);
         });
     }
     
-    createTears(x, y, index) {
-        // Continuous tears falling
+    createTears(x, eyeY, index) {
+        // Left eye tears
         this.time.addEvent({
-            delay: 400 + index * 200,
+            delay: 300 + index * 150,
             callback: () => {
-                const tearX = x + (Math.random() > 0.5 ? -20 : 20);
-                const tear = this.add.circle(tearX, y, 4, 0x6699ff, 0.9);
+                const leftEyeX = x - 15; // Left eye position
+                const tear = this.add.circle(leftEyeX, eyeY, 5, 0x6699ff, 0.95);
+                
+                // Add slight shine to tear
+                const shine = this.add.circle(leftEyeX - 2, eyeY - 2, 2, 0xccddff, 0.8);
+                
                 this.tweens.add({
                     targets: tear,
-                    y: y + 100,
+                    y: eyeY + 120,
+                    x: leftEyeX + Phaser.Math.Between(-5, 5), // Slight horizontal drift
                     alpha: 0,
-                    duration: 1000,
-                    ease: 'Sine.easeIn',
+                    scaleY: 1.3, // Stretch as it falls
+                    duration: 1200,
+                    ease: 'Quad.easeIn',
                     onComplete: () => tear.destroy()
+                });
+                
+                this.tweens.add({
+                    targets: shine,
+                    y: eyeY + 120,
+                    x: leftEyeX - 2 + Phaser.Math.Between(-5, 5),
+                    alpha: 0,
+                    duration: 1200,
+                    ease: 'Quad.easeIn',
+                    onComplete: () => shine.destroy()
+                });
+            },
+            loop: true
+        });
+        
+        // Right eye tears (slightly offset timing)
+        this.time.addEvent({
+            delay: 500 + index * 150,
+            callback: () => {
+                const rightEyeX = x + 15; // Right eye position
+                const tear = this.add.circle(rightEyeX, eyeY, 5, 0x6699ff, 0.95);
+                
+                // Add slight shine to tear
+                const shine = this.add.circle(rightEyeX - 2, eyeY - 2, 2, 0xccddff, 0.8);
+                
+                this.tweens.add({
+                    targets: tear,
+                    y: eyeY + 120,
+                    x: rightEyeX + Phaser.Math.Between(-5, 5), // Slight horizontal drift
+                    alpha: 0,
+                    scaleY: 1.3, // Stretch as it falls
+                    duration: 1200,
+                    ease: 'Quad.easeIn',
+                    onComplete: () => tear.destroy()
+                });
+                
+                this.tweens.add({
+                    targets: shine,
+                    y: eyeY + 120,
+                    x: rightEyeX - 2 + Phaser.Math.Between(-5, 5),
+                    alpha: 0,
+                    duration: 1200,
+                    ease: 'Quad.easeIn',
+                    onComplete: () => shine.destroy()
+                });
+            },
+            loop: true
+        });
+        
+        // Occasional big tear drops
+        this.time.addEvent({
+            delay: 1500 + index * 300,
+            callback: () => {
+                const eyeX = x + (Math.random() > 0.5 ? -15 : 15);
+                const bigTear = this.add.circle(eyeX, eyeY, 7, 0x5588ee, 0.9);
+                
+                this.tweens.add({
+                    targets: bigTear,
+                    y: eyeY + 130,
+                    x: eyeX + Phaser.Math.Between(-10, 10),
+                    alpha: 0,
+                    scaleY: 1.5,
+                    duration: 1000,
+                    ease: 'Quad.easeIn',
+                    onComplete: () => bigTear.destroy()
                 });
             },
             loop: true
