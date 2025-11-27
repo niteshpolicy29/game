@@ -58,6 +58,15 @@ export class OptionsScene extends Phaser.Scene {
             this.scene.start('MenuScene');
         });
         
+        // ESC hint
+        const escHint = this.add.text(
+            centerX,
+            this.cameras.main.height - 40,
+            'Press ESC to return to menu',
+            { fontSize: '20px', fill: '#888888' }
+        );
+        escHint.setOrigin(0.5);
+        
         // Keyboard shortcut
         this.input.keyboard.once('keydown-ESC', () => {
             this.scene.start('MenuScene');

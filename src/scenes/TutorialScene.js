@@ -72,7 +72,7 @@ export class TutorialScene extends Phaser.Scene {
         
         // Lives info
         const livesInfo = this.add.text(centerX, controlsY + 110,
-            'You have 3 lives • Checkpoints save your progress',
+            'You have 4 lives • No checkpoints - complete in one run!',
             {
                 fontSize: '24px',
                 fill: '#00ff00'
@@ -90,6 +90,13 @@ export class TutorialScene extends Phaser.Scene {
         });
         startText.setOrigin(0.5);
         
+        // Back to menu hint
+        const backText = this.add.text(centerX, 950, 'Press ESC to return to menu', {
+            fontSize: '20px',
+            fill: '#888888'
+        });
+        backText.setOrigin(0.5);
+        
         // Blinking animation
         this.tweens.add({
             targets: startText,
@@ -103,6 +110,10 @@ export class TutorialScene extends Phaser.Scene {
         // Input
         this.input.keyboard.once('keydown-SPACE', () => {
             this.scene.start('GameScene');
+        });
+        
+        this.input.keyboard.once('keydown-ESC', () => {
+            this.scene.start('MenuScene');
         });
     }
     
