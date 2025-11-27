@@ -2258,7 +2258,7 @@ export class GameScene extends Phaser.Scene {
         layer2.setScrollFactor(0.1); // Very slow parallax - barely moves
         layer2.setDepth(-90);
         
-        // Layer 3 - Ground/foreground layer (bottom, repeating horizontally)
+        // Layer 3 - Ground/foreground layer (bottom, seamless tiling)
         const layer3Texture = this.textures.get('bg-layer3');
         const layer3Width = layer3Texture.source[0].width;
         const layer3Height = layer3Texture.source[0].height;
@@ -2268,14 +2268,20 @@ export class GameScene extends Phaser.Scene {
         const layer3Scale = targetLayer3Width / layer3Width;
         const scaledLayer3Height = layer3Height * layer3Scale;
         
-        // Create repeating layer 3 across the world at bottom
-        const layer3Count = Math.ceil(worldWidth / targetLayer3Width) + 2;
-        for (let i = 0; i < layer3Count; i++) {
-            const layer3 = this.add.image(i * targetLayer3Width, worldHeight, 'bg-layer3');
-            layer3.setOrigin(0, 1); // Bottom-left origin
-            layer3.setDisplaySize(targetLayer3Width, scaledLayer3Height);
-            layer3.setScrollFactor(0.6); // Faster parallax
-            layer3.setDepth(-80);
-        }
+        // Use tileSprite for seamless repeating
+        const layer3 = this.add.tileSprite(
+            0, 
+            worldHeight, 
+            worldWidth * 2, // Make it wider than world for smooth scrolling
+            scaledLayer3Height, 
+            'bg-layer3'
+        );
+        layer3.setOrigin(0, 1); // Bottom-left origin
+        layer3.setScrollFactor(0.6); // Faster parallax
+        layer3.setDepth(-80);
+        layer3.setScale(layer3Scale);
+        
+        // Store reference for potential animation
+        this.layer3Tile = layer3;
     }
 }
