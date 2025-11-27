@@ -666,9 +666,13 @@ export class GameScene extends Phaser.Scene {
         
         const completionTime = Math.floor((this.time.now - this.startTime) / 1000);
         
-        // Disable player controls
+        // Disable player controls and physics
+        this.player.isDead = true; // Prevent any updates
         this.player.body.setVelocity(0, 0);
+        this.player.body.setAcceleration(0, 0);
         this.player.body.setAllowGravity(false);
+        this.player.body.setBounce(0); // Disable jelly bounce
+        this.player.body.enable = false; // Disable physics body completely
         
         // Animate ball going into bag
         this.tweens.add({
