@@ -2251,9 +2251,9 @@ export class GameScene extends Phaser.Scene {
         const layer2Scale = viewportHeight / layer2Height;
         const scaledLayer2Width = layer2Width * layer2Scale;
         
-        // Position on right side of viewport
-        const layer2 = this.add.image(viewportWidth, viewportHeight / 2, 'bg-layer2');
-        layer2.setOrigin(1, 0.5); // Right-center origin
+        // Position at right bottom corner
+        const layer2 = this.add.image(viewportWidth, viewportHeight, 'bg-layer2');
+        layer2.setOrigin(1, 1); // Right-bottom origin
         layer2.setDisplaySize(scaledLayer2Width, viewportHeight);
         layer2.setScrollFactor(0.1); // Very slow parallax - barely moves
         layer2.setDepth(-90);
