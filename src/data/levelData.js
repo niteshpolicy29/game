@@ -69,14 +69,18 @@ export const LevelData = {
         { x: 6350, y: 900, patrolStart: 6250, patrolEnd: 6550 }
     ],
     waterAreas: [
-        // First water section - reduced size for easier crossing
-        // Segment 2 ends at x: 2640 (2330 + 620/2), Segment 3 starts at x: 3525 (3800 - 550/2)
-        // Gap size: 885 units, Water width: 520 units (more manageable)
-        { x: 3082.5, y: 1044, width: 520, height: 48 },
-        // Second water section - reduced size
-        // Segment 5 ends at x: 6435 (6210 + 450/2), Final segment starts at x: 7020 (7420 - 800/2)
-        // Gap size: 585 units, Water width: 380 units (more manageable)
-        { x: 6727.5, y: 1044, width: 380, height: 48 }
+        // First water section - fills entire gap between segments 2 and 3
+        // Segment 2: x=2330, width=620 → right edge at 2640
+        // Segment 3: x=3800, width=550 → left edge at 3525
+        // Gap: 2640 to 3525 = 885 units
+        // Water center: (2640 + 3525) / 2 = 3082.5
+        { x: 3082.5, y: 1044, width: 885, height: 48 },
+        // Second water section - fills entire gap between segments 5 and final
+        // Segment 5: x=6210, width=450 → right edge at 6435
+        // Final segment: x=7420, width=800 → left edge at 7020
+        // Gap: 6435 to 7020 = 585 units
+        // Water center: (6435 + 7020) / 2 = 6727.5
+        { x: 6727.5, y: 1044, width: 585, height: 48 }
     ],
     worldBounds: { width: 8220, height: 1080 }
 };
