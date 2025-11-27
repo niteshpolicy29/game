@@ -80,12 +80,17 @@ export const Level3Data = {
         { x: 8750, y: 900, patrolStart: 8590, patrolEnd: 8940 }
     ],
     waterAreas: [
-        // First water section - fills gap between segments 2 and 3
+        // First water section - fills gap between starting ground and segment 1
+        // Starting ground: x=350, width=700 → right edge at 700
+        // Segment 1: x=1330, width=500 → left edge at 1080
+        // Gap: 700 to 1080 = 380 units
+        { x: 890, y: 1044, width: 380, height: 48 },
+        // Second water section - fills gap between segments 2 and 3
         // Segment 2: x=2455, width=480 → right edge at 2695
         // Segment 3: x=3855, width=550 → left edge at 3580
         // Gap: 2695 to 3580 = 885 units
         { x: 3137.5, y: 1044, width: 885, height: 48 },
-        // Second water section - fills gap between segments 6 and 7
+        // Third water section - fills gap between segments 6 and 7
         // Segment 6: x=7585, width=650 → right edge at 7910
         // Segment 7: x=8590, width=700 → left edge at 8240
         // Gap: 7910 to 8240 = 330 units
