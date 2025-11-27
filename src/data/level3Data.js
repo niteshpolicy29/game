@@ -78,9 +78,9 @@ export const Level3Data = {
         { x: 2895, y: 1044, width: 700, height: 48 },
         // Second water section - fills gap between segments 5 and 6
         // Segment 5: x=5855, width=500 → right edge at 6105
-        // Segment 6: x=7205, width=650 → left edge at 6880
-        // Gap: 6105 to 6880 = 775 units
-        { x: 6492.5, y: 1044, width: 775, height: 48 }
+        // Segment 6: x=7205, width=1200 → left edge at 6605
+        // Gap: 6105 to 6605 = 500 units
+        { x: 6355, y: 1044, width: 500, height: 48 }
     ],
     worldBounds: { width: 8400, height: 1080 }
 };
