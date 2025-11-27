@@ -2242,32 +2242,28 @@ export class GameScene extends Phaser.Scene {
         layer1.setScrollFactor(0); // Fixed to camera
         layer1.setDepth(-100);
         
-        // Layer 2 - Middle layer (right side, repeating horizontally)
-        // Position on right side of viewport
+        // Layer 2 - Middle layer (single image, moves slowly with slight parallax)
         const layer2Texture = this.textures.get('bg-layer2');
         const layer2Width = layer2Texture.source[0].width;
         const layer2Height = layer2Texture.source[0].height;
         
-        // Scale to fit viewport height
+        // Scale to fit viewport height while maintaining aspect ratio
         const layer2Scale = viewportHeight / layer2Height;
         const scaledLayer2Width = layer2Width * layer2Scale;
         
-        // Create repeating layer 2 across the world
-        const layer2Count = Math.ceil(worldWidth / scaledLayer2Width) + 2;
-        for (let i = 0; i < layer2Count; i++) {
-            const layer2 = this.add.image(i * scaledLayer2Width, viewportHeight / 2, 'bg-layer2');
-            layer2.setOrigin(0, 0.5);
-            layer2.setDisplaySize(scaledLayer2Width, viewportHeight);
-            layer2.setScrollFactor(0.3); // Parallax effect
-            layer2.setDepth(-90);
-        }
+        // Position on right side of viewport
+        const layer2 = this.add.image(viewportWidth, viewportHeight / 2, 'bg-layer2');
+        layer2.setOrigin(1, 0.5); // Right-center origin
+        layer2.setDisplaySize(scaledLayer2Width, viewportHeight);
+        layer2.setScrollFactor(0.1); // Very slow parallax - barely moves
+        layer2.setDepth(-90);
         
         // Layer 3 - Ground/foreground layer (bottom, repeating horizontally)
         const layer3Texture = this.textures.get('bg-layer3');
         const layer3Width = layer3Texture.source[0].width;
         const layer3Height = layer3Texture.source[0].height;
         
-        // Scale to fit viewport width
+        // Calculate scale to fit viewport width while maintaining aspect ratio
         const layer3Scale = viewportWidth / layer3Width;
         const scaledLayer3Height = layer3Height * layer3Scale;
         
