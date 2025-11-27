@@ -2263,23 +2263,18 @@ export class GameScene extends Phaser.Scene {
         const layer3Width = layer3Texture.source[0].width;
         const layer3Height = layer3Texture.source[0].height;
         
-        // Scale to 60% of viewport width while maintaining aspect ratio
-        const targetLayer3Width = viewportWidth * 0.6;
-        const layer3Scale = targetLayer3Width / layer3Width;
-        const scaledLayer3Height = layer3Height * layer3Scale;
-        
-        // Use tileSprite for seamless repeating
+        // Use tileSprite for seamless horizontal repeating only
+        // TileSprite uses original texture dimensions, so we tile at original size
         const layer3 = this.add.tileSprite(
             0, 
-            worldHeight, 
-            worldWidth * 2, // Make it wider than world for smooth scrolling
-            scaledLayer3Height, 
+            worldHeight - layer3Height, // Position at bottom
+            worldWidth * 2, // Wide enough for smooth scrolling
+            layer3Height, // Original height (no vertical tiling)
             'bg-layer3'
         );
-        layer3.setOrigin(0, 1); // Bottom-left origin
+        layer3.setOrigin(0, 0); // Top-left origin
         layer3.setScrollFactor(0.6); // Faster parallax
         layer3.setDepth(-80);
-        layer3.setScale(layer3Scale);
         
         // Store reference for potential animation
         this.layer3Tile = layer3;
