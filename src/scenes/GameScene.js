@@ -1921,24 +1921,17 @@ export class GameScene extends Phaser.Scene {
         ];
         
         layers.forEach(layer => {
-            // Get texture dimensions
-            const texture = this.textures.get(layer.key);
-            const bgWidth = texture.source[0].width;
-            const bgHeight = texture.source[0].height;
-            
-            // Calculate how many tiles needed (add extra for parallax scrolling)
-            const tilesX = Math.ceil(worldWidth / bgWidth) + 3;
-            const tilesY = Math.ceil(worldHeight / bgHeight) + 1;
-            
-            // Create tiled background for this layer
-            for (let x = 0; x < tilesX; x++) {
-                for (let y = 0; y < tilesY; y++) {
-                    const tile = this.add.image(x * bgWidth, y * bgHeight, layer.key);
-                    tile.setOrigin(0, 0);
-                    tile.setDepth(layer.depth);
-                    tile.setScrollFactor(layer.scrollFactor);
-                }
-            }
+            // Create a single repeating background using TileSprite for better performance
+            const bg = this.add.tileSprite(
+                0, 
+                0, 
+                worldWidth * 2,  // Make it wider for parallax
+                worldHeight, 
+                layer.key
+            );
+            bg.setOrigin(0, 0);
+            bg.setDepth(layer.depth);
+            bg.setScrollFactor(layer.scrollFactor);
         });
     }
     
