@@ -112,7 +112,7 @@ export class GameScene extends Phaser.Scene {
         };
         
         // Setup camera to follow player at normal zoom
-        this.cameras.main.setBounds(0, 0, LevelData.worldBounds.width, LevelData.worldBounds.height);
+        this.cameras.main.setBounds(0, 0, this.levelData.worldBounds.width, this.levelData.worldBounds.height);
         this.cameras.main.setZoom(1.0);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
         
