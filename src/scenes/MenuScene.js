@@ -18,6 +18,16 @@ export class MenuScene extends Phaser.Scene {
         const bg = this.add.image(centerX, centerY, 'menu-bg');
         bg.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
         
+        // Add dark overlay to reduce brightness and improve text readability
+        const overlay = this.add.rectangle(
+            centerX,
+            centerY,
+            this.cameras.main.width,
+            this.cameras.main.height,
+            0x000000,
+            0.5
+        );
+        
         // Spooky Title
         const title = this.add.text(
             centerX,
