@@ -8,11 +8,12 @@ import { GameScene } from './scenes/GameScene.js';
 import { GameOverScene } from './scenes/GameOverScene.js';
 import { VictoryScene } from './scenes/VictoryScene.js';
 import { RespawnScene } from './scenes/RespawnScene.js';
+import { PauseScene } from './scenes/PauseScene.js';
 
 // Initialize game configuration with scenes
 const config = {
     ...GameConfig,
-    scene: [BootScene, MenuScene, OptionsScene, TutorialScene, GameScene, RespawnScene, GameOverScene, VictoryScene]
+    scene: [BootScene, MenuScene, OptionsScene, TutorialScene, GameScene, RespawnScene, PauseScene, GameOverScene, VictoryScene]
 };
 
 // Create game instance

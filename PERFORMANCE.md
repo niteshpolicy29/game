@@ -587,15 +587,23 @@ Nightmellow is well-optimized for 60 FPS gameplay on modern hardware. Key optimi
 8. **Water physics** only calculated when marshmallow is in water
 9. **Form-specific death animations** with proper cleanup
 10. **Procedural texture generation** (one-time creation, then cached)
-11. **Background parallax** with scroll factors for depth
-12. **Crow object pooling** (implicit through array management)
+11. **Parallax background layers** with scroll factors for depth
+12. **Crow management** (array-based with automatic cleanup)
+13. **Audio system** with volume controls and localStorage persistence
+14. **Scene-based architecture** with proper cleanup on transitions
+15. **Multi-level support** with efficient data loading
 
-Performance is stable across the 8220-unit world with:
-- 6 enemy bats with patrol AI
-- 20+ platforms (static bodies)
+Performance is stable across all 4 levels with:
+- 6+ enemy bats with patrol AI and wing animation (3 frames)
+- 20+ platforms per level (static bodies)
 - 2 water areas with animated waves
 - 3+ flying crows with wing animation
-- Extensive Halloween background elements
+- Parallax background layers
 - Triple-form transformation system
+- Full audio system (BGM + SFX)
+- Lives system with UI updates
+- Pause menu overlay
 
-The triple-form transformation system adds minimal overhead due to conditional physics application. Water physics for marshmallow form are efficiently calculated only when needed using spring physics and adaptive dampening. Room for future enhancements like explicit object pooling for particles and sprite atlases if needed for larger levels or more complex gameplay.
+The triple-form transformation system adds minimal overhead due to conditional physics application. Water physics for marshmallow form are efficiently calculated only when needed using spring physics and adaptive dampening. The multi-level system efficiently loads level data without memory leaks. Audio system uses Phaser's built-in sound manager with volume controls.
+
+Room for future enhancements like explicit object pooling for particles and sprite atlases if needed for larger levels or more complex gameplay.

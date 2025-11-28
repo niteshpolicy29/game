@@ -2,22 +2,30 @@
 
 A Halloween-themed 2D platformer game built with Phaser 3 featuring a unique triple-form transformation system. Control a candy ball character that can transform into marshmallow and jelly forms, each with distinct physics. Navigate through haunted landscapes with water crossings, avoid cursed bats, and collect your candy before the night ends!
 
+**Current Status**: 4 levels complete with infinite looping, full audio system, pause menu, tutorial scene, and options menu.
+
 ## Features
 
 - **Triple Form System**: Switch between three unique forms with distinct physics
   - **Candy Ball**: Normal movement, can jump, standard physics
   - **Marshmallow**: Slow floating descent, cannot jump, water physics
   - **Jelly**: Bouncy with automatic idle hops, fast-fall mechanic, floaty air physics
+- **4 Unique Levels**: Each with distinct layouts, infinite looping progression
 - **Water Physics**: Marshmallow form floats on water with realistic bobbing and splash effects
 - **Enemy Hazards**: Cursed bats patrol platforms with deadly touch
-- **Challenging Level Design**: Navigate varied gaps (small, medium, large, huge) across an 8220-unit world
-- **Spooky Halloween Theme**: Purple night sky, haunted castle, glowing moon, spooky trees with faces
-- **Lives System**: 3 lives with instant respawn and form-specific death animations
+- **Challenging Level Design**: Navigate varied gaps (small, medium, large, huge) across expansive worlds
+- **Spooky Halloween Theme**: Purple night sky, haunted castle, glowing moon, parallax backgrounds
+- **Lives System**: 4 lives with instant respawn and form-specific death animations
+- **Full Audio System**: Background music, sound effects, adjustable volume controls
 - **Dynamic Camera**: Smooth following camera with world boundaries
 - **Victory & Game Over**: Unique scenes with thematic animations
+- **Pause Menu**: ESC to pause, resume or return to menu
+- **Tutorial Scene**: Interactive how-to-play guide
+- **Options Menu**: Volume controls for music and SFX
 - **Completion Time Tracking**: Best time saved to localStorage
 - **Jump Buffering**: Responsive jump input with 150ms buffer window
 - **Visual Polish**: Rolling animation, dynamic shine effects, particle systems, procedural textures
+- **Flying Crows**: Atmospheric background elements with wing animation
 
 ## Controls
 
@@ -25,6 +33,7 @@ A Halloween-themed 2D platformer game built with Phaser 3 featuring a unique tri
 - **Spacebar** or **Up Arrow** or **W**: Jump (not available in marshmallow form)
 - **E**: Toggle marshmallow form (floats slowly, cannot jump, water physics)
 - **Q**: Toggle jelly form (bouncy, auto-hops, fast-fall with jump in air)
+- **ESC**: Pause game (during gameplay)
 - **M**: Return to menu (from game over/victory screens)
 
 ## Setup and Run
@@ -60,7 +69,7 @@ Guide the candy ball through a haunted Halloween night to reach the trick-or-tre
 - **Marshmallow**: Float slowly down large gaps and across water areas
 - **Jelly**: Bouncy movement with high jumps, use fast-fall (jump in air) to quickly reach ground
 
-You have 3 lives - use them wisely! Complete the journey to collect your candy!
+You have 4 lives - use them wisely! Complete all levels to collect your candy! Levels loop infinitely with increasing difficulty.
 
 ## Technical Details
 
@@ -83,18 +92,27 @@ You have 3 lives - use them wisely! Complete the journey to collect your candy!
 │   ├── main.js                     # Application entry
 │   ├── game.js                     # Game instance initialization
 │   ├── config.js                   # Game & physics configuration
+│   ├── audioConfig.js              # Audio system configuration
 │   ├── data/
-│   │   └── levelData.js           # Level layout, platforms, enemies, checkpoints
+│   │   ├── levelData.js           # Level 1 layout
+│   │   ├── level2Data.js          # Level 2 layout
+│   │   ├── level3Data.js          # Level 3 layout
+│   │   └── level4Data.js          # Level 4 layout
 │   ├── entities/
 │   │   ├── Player.js              # Player ball with physics and visuals
 │   │   ├── PlatformManager.js     # Platform creation and collision
 │   │   ├── Goal.js                # Trick-or-treat bag goal
-│   │   ├── Enemy.js               # Cursed bat enemies
-│   │   └── Checkpoint.js          # Checkpoint lanterns
+│   │   ├── Enemy.js               # Cursed bat enemies with wing animation
+│   │   ├── Checkpoint.js          # Checkpoint lanterns
+│   │   └── Crow.js                # Flying crow background elements
 │   └── scenes/
 │       ├── BootScene.js           # Initial loading scene
 │       ├── MenuScene.js           # Main menu with title
+│       ├── TutorialScene.js       # How to play instructions
+│       ├── OptionsScene.js        # Volume controls
 │       ├── GameScene.js           # Main gameplay scene
+│       ├── PauseScene.js          # Pause menu overlay
+│       ├── RespawnScene.js        # Death/respawn screen
 │       ├── GameOverScene.js       # Game over with crying kids
 │       └── VictoryScene.js        # Victory celebration
 └── .kiro/

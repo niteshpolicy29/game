@@ -1,26 +1,26 @@
 export const LevelData = {
     platforms: [
-        // GROUND SEGMENTS with VARIED gap sizes (increased height to 150 for better texture visibility)
+        // GROUND SEGMENTS with VARIED gap sizes
         // Starting ground
-        { x: 350, y: 1005, width: 700, height: 150 },
+        { x: 350, y: 1044, width: 700, height: 72 },
         
         // Ground segment 1 (after SMALL gap - 280 units)
-        { x: 1330, y: 1005, width: 480, height: 150 },
+        { x: 1330, y: 1044, width: 480, height: 72 },
         
         // Ground segment 2 (after MEDIUM gap - 520 units)
-        { x: 2330, y: 1005, width: 620, height: 150 },
+        { x: 2330, y: 1044, width: 620, height: 72 },
         
         // Ground segment 3 (after LARGE water gap - 850 units)
-        { x: 3800, y: 1005, width: 550, height: 150 },
+        { x: 3800, y: 1044, width: 550, height: 72 },
         
         // Ground segment 4 (after TINY gap - 180 units)
-        { x: 4530, y: 1005, width: 700, height: 150 },
+        { x: 4530, y: 1044, width: 700, height: 72 },
         
         // Ground segment 5 (after HUGE gap - 980 units)
-        { x: 6210, y: 1005, width: 450, height: 150 },
+        { x: 6210, y: 1044, width: 450, height: 72 },
         
         // Final ground segment (after LARGE water gap - 760 units)
-        { x: 7420, y: 1005, width: 800, height: 150 },
+        { x: 7420, y: 1044, width: 800, height: 72 },
         
         // FLOATING PLATFORMS - SMALL GAP 1 (x: 700 to x: 1050) - 280 units
         { x: 850, y: 880, width: 160, height: 48 },
@@ -48,7 +48,7 @@ export const LevelData = {
         
         // FLOATING PLATFORMS - LARGE WATER GAP 6 - REMOVED (water crossing)
     ],
-    playerStart: { x: 240, y: 850 },
+    playerStart: { x: 240, y: 900 },
     goal: { x: 7650, y: 850 },
     checkpoints: [
         { x: 2700, y: 950 },  // Checkpoint 1 - End of first section

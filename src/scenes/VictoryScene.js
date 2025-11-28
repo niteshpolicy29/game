@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { AudioConfig } from '../audioConfig.js';
 
 export class VictoryScene extends Phaser.Scene {
     constructor() {
@@ -15,8 +16,26 @@ export class VictoryScene extends Phaser.Scene {
     create(data) {
         const completionTime = data.time || 0;
         const currentLevel = data.level || 1;
+        const currentLives = data.lives !== undefined ? data.lives : 4;
         const nextLevel = currentLevel + 1;
-        const hasNextLevel = nextLevel <= 4; // We have 4 levels
+        const hasNextLevel = true; // Infinite looping - always has next level
+        
+        // Pause BGM
+        const bgm = this.sound.get('bgm');
+        if (bgm && bgm.isPlaying) {
+            bgm.pause();
+        }
+        
+        // Play victory sound
+        const victorySound = this.sound.add('victory-sound', { volume: AudioConfig.getSFXVolume() });
+        victorySound.play();
+        
+        // Resume BGM after victory sound ends
+        victorySound.once('complete', () => {
+            if (bgm) {
+                bgm.resume();
+            }
+        });
         
         // Dark background
         this.add.rectangle(
@@ -43,7 +62,7 @@ export class VictoryScene extends Phaser.Scene {
             this.cameras.main.centerX,
             this.cameras.main.centerY - 150,
             'Th-thank you sooo much for the candy!!',
-            { fontSize: '38px', fill: '#ffaa00', fontStyle: 'italic', align: 'center' }
+            { fontFamily: 'Griffy, cursive', fontSize: '38px', fill: '#ffaa00', fontStyle: 'italic', align: 'center' }
         );
         thankYouText.setOrigin(0.5);
         
@@ -60,59 +79,35 @@ export class VictoryScene extends Phaser.Scene {
         // Create happy kids
         this.createHappyKids();
         
-        // Next level or restart instructions
-        if (hasNextLevel) {
-            const nextLevelText = this.add.text(
-                this.cameras.main.centerX,
-                this.cameras.main.height - 120,
-                'Press SPACE for Next Level',
-                { fontSize: '36px', fill: '#00ff00', fontStyle: 'bold' }
-            );
-            nextLevelText.setOrigin(0.5);
-            
-            this.tweens.add({
-                targets: nextLevelText,
-                alpha: 0.2,
-                duration: 600,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
-            
-            // Input for next level
-            this.input.keyboard.once('keydown-SPACE', () => {
-                this.scene.start('GameScene', { level: nextLevel });
-            });
-        } else {
-            const restartText = this.add.text(
-                this.cameras.main.centerX,
-                this.cameras.main.height - 120,
-                'All Levels Complete! Press SPACE to Restart',
-                { fontSize: '32px', fill: '#00ff00', fontStyle: 'bold' }
-            );
-            restartText.setOrigin(0.5);
-            
-            this.tweens.add({
-                targets: restartText,
-                alpha: 0.2,
-                duration: 600,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
-            
-            // Input to restart from level 1
-            this.input.keyboard.once('keydown-SPACE', () => {
-                this.scene.start('GameScene', { level: 1 });
-            });
-        }
+        // Next level instruction (infinite looping)
+        const nextLevelText = this.add.text(
+            this.cameras.main.centerX,
+            this.cameras.main.height - 120,
+            'Press SPACE for Next Level',
+            { fontFamily: 'Griffy, cursive', fontSize: '36px', fill: '#00ff00', fontStyle: 'bold' }
+        );
+        nextLevelText.setOrigin(0.5);
+        
+        this.tweens.add({
+            targets: nextLevelText,
+            alpha: 0.2,
+            duration: 600,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+        
+        // Input for next level (infinite progression with persistent lives)
+        this.input.keyboard.once('keydown-SPACE', () => {
+            this.scene.start('GameScene', { level: nextLevel, lives: currentLives });
+        });
         
         // Menu option
         const menuText = this.add.text(
             this.cameras.main.centerX,
             this.cameras.main.height - 60,
             'Press M for Menu',
-            { fontSize: '28px', fill: '#aaaaaa', fontStyle: 'bold' }
+            { fontFamily: 'Griffy, cursive', fontSize: '28px', fill: '#aaaaaa', fontStyle: 'bold' }
         );
         menuText.setOrigin(0.5);
         

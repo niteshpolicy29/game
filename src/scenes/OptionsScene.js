@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { AudioConfig } from '../audioConfig.js';
 
 export class OptionsScene extends Phaser.Scene {
     constructor() {
@@ -8,6 +9,14 @@ export class OptionsScene extends Phaser.Scene {
     create() {
         const centerX = this.cameras.main.centerX;
         const centerY = this.cameras.main.centerY;
+        
+        // Get current volumes
+        this.musicVolume = AudioConfig.getMusicVolume();
+        this.sfxVolume = AudioConfig.getSFXVolume();
+        
+        // Track dragging state
+        this.isDragging = false;
+        this.activeBar = null;
         
         // Dark background
         this.add.rectangle(
@@ -34,24 +43,15 @@ export class OptionsScene extends Phaser.Scene {
             centerX,
             centerY - 100,
             'AUDIO SETTINGS',
-            { fontSize: '42px', fill: '#ffaa00', fontStyle: 'bold' }
+            { fontFamily: 'Griffy, cursive', fontSize: '42px', fill: '#ffaa00', fontStyle: 'bold' }
         );
         audioTitle.setOrigin(0.5);
         
-        // Music Volume (placeholder for future implementation)
-        this.createVolumeControl(centerX, centerY - 20, 'Music Volume', 'music');
+        // Music Volume
+        this.musicControl = this.createVolumeControl(centerX, centerY - 20, 'Music Volume', 'music', this.musicVolume);
         
-        // SFX Volume (placeholder for future implementation)
-        this.createVolumeControl(centerX, centerY + 60, 'SFX Volume', 'sfx');
-        
-        // Coming Soon message
-        const comingSoon = this.add.text(
-            centerX,
-            centerY + 150,
-            'Audio will be added in a future update',
-            { fontSize: '24px', fill: '#888888', fontStyle: 'italic' }
-        );
-        comingSoon.setOrigin(0.5);
+        // SFX Volume
+        this.sfxControl = this.createVolumeControl(centerX, centerY + 60, 'SFX Volume', 'sfx', this.sfxVolume);
         
         // Back button
         this.createButton(centerX, this.cameras.main.height - 100, 'BACK TO MENU', () => {
@@ -63,7 +63,7 @@ export class OptionsScene extends Phaser.Scene {
             centerX,
             this.cameras.main.height - 40,
             'Press ESC to return to menu',
-            { fontSize: '20px', fill: '#888888' }
+            { fontFamily: 'Griffy, cursive', fontSize: '20px', fill: '#888888' }
         );
         escHint.setOrigin(0.5);
         
@@ -73,9 +73,10 @@ export class OptionsScene extends Phaser.Scene {
         });
     }
     
-    createVolumeControl(x, y, label, type) {
+    createVolumeControl(x, y, label, type, volumeLevel) {
         // Label
-        const labelText = this.add.text(x - 200, y, label + ':', {
+        const labelText = this.add.text(x - 350, y, label + ':', {
+            fontFamily: 'Griffy, cursive',
             fontSize: '28px',
             fill: '#ffffff'
         });
@@ -84,14 +85,14 @@ export class OptionsScene extends Phaser.Scene {
         // Volume bar background
         const barWidth = 300;
         const barHeight = 20;
-        const barBg = this.add.rectangle(x + 100, y, barWidth, barHeight, 0x333333);
+        const barBg = this.add.rectangle(x + 50, y, barWidth, barHeight, 0x333333);
         barBg.setStrokeStyle(2, 0xff6600);
+        barBg.setInteractive({ useHandCursor: true });
         
-        // Volume bar fill (currently at 50% as placeholder)
-        const volumeLevel = 0.5; // Will be configurable later
+        // Volume bar fill
         const fillWidth = barWidth * volumeLevel;
         const barFill = this.add.rectangle(
-            x + 100 - (barWidth / 2) + (fillWidth / 2),
+            x + 50 - (barWidth / 2) + (fillWidth / 2),
             y,
             fillWidth,
             barHeight,
@@ -99,13 +100,76 @@ export class OptionsScene extends Phaser.Scene {
         );
         
         // Percentage text
-        const percentText = this.add.text(x + 270, y, '50%', {
+        const percentText = this.add.text(x + 220, y, Math.round(volumeLevel * 100) + '%', {
+            fontFamily: 'Griffy, cursive',
             fontSize: '24px',
             fill: '#ffaa00'
         });
         percentText.setOrigin(0, 0.5);
         
-        return { label: labelText, barBg, barFill, percentText };
+        // Make bar interactive with drag support
+        barBg.setInteractive();
+        
+        barBg.on('pointerdown', (pointer) => {
+            this.isDragging = true;
+            this.activeBar = { barBg, barFill, percentText, type, barCenterX: x + 50, barWidth };
+            this.updateVolume(pointer, barBg, barFill, percentText, type, x + 50, barWidth);
+        });
+        
+        barBg.on('pointermove', (pointer) => {
+            if (this.isDragging && this.activeBar && this.activeBar.barBg === barBg) {
+                this.updateVolume(pointer, barBg, barFill, percentText, type, x + 50, barWidth);
+            }
+        });
+        
+        barBg.on('pointerup', () => {
+            this.isDragging = false;
+            this.activeBar = null;
+        });
+        
+        barBg.on('pointerout', (pointer) => {
+            // Continue updating even when pointer leaves the bar during drag
+            if (this.isDragging && this.activeBar && this.activeBar.barBg === barBg && pointer.isDown) {
+                this.updateVolume(pointer, barBg, barFill, percentText, type, x + 50, barWidth);
+            }
+        });
+        
+        return { label: labelText, barBg, barFill, percentText, type };
+    }
+    
+    updateVolume(pointer, barBg, barFill, percentText, type, barCenterX, barWidth) {
+        // Calculate volume based on click position
+        // Use pointer position in camera coordinates
+        const barLeft = barCenterX - barWidth / 2;
+        const barRight = barCenterX + barWidth / 2;
+        const clickX = pointer.x + this.cameras.main.scrollX;
+        
+        // Clamp to bar bounds
+        const clampedX = Phaser.Math.Clamp(clickX, barLeft, barRight);
+        const volume = Phaser.Math.Clamp((clampedX - barLeft) / barWidth, 0, 1);
+        
+        // Update fill bar - ensure it stays within bounds
+        const fillWidth = Phaser.Math.Clamp(barWidth * volume, 0, barWidth);
+        barFill.width = fillWidth;
+        // Position fill bar from the left edge of the background bar
+        barFill.x = barLeft + (fillWidth / 2);
+        
+        // Update percentage text
+        percentText.setText(Math.round(volume * 100) + '%');
+        
+        // Save and apply volume
+        if (type === 'music') {
+            this.musicVolume = volume;
+            AudioConfig.setMusicVolume(volume);
+            // Update BGM volume
+            const bgm = this.sound.get('bgm');
+            if (bgm) {
+                bgm.setVolume(volume);
+            }
+        } else if (type === 'sfx') {
+            this.sfxVolume = volume;
+            AudioConfig.setSFXVolume(volume);
+        }
     }
     
     createButton(x, y, text, callback) {
@@ -118,6 +182,7 @@ export class OptionsScene extends Phaser.Scene {
         
         // Button text
         const buttonText = this.add.text(x, y, text, {
+            fontFamily: 'Griffy, cursive',
             fontSize: '32px',
             fill: '#ff6600',
             fontStyle: 'bold'

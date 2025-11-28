@@ -7,9 +7,21 @@ Nightmellow is a 2D physics-based platformer built with Phaser 3. The architectu
 The game features a unique triple-form transformation system where the player can switch between three distinct forms:
 - **Candy Ball**: Standard platforming with normal physics (480 max speed, -960 jump velocity)
 - **Marshmallow**: Buoyant floating with realistic water physics (240 max speed, cannot jump, floats on water)
-- **Jelly**: Bouncy movement with auto-hops and fast-fall mechanics (280 max speed, -1300 jump velocity, auto-hops every 800ms)
+- **Jelly**: Bouncy movement with auto-hops and fast-fall mechanics (280 max speed, -1500 jump velocity, auto-hops every 800ms)
 
-Each form has unique physics properties, procedurally generated textures, visual appearance, and death animations, enabling creative level design with varied gap sizes (280-980 units) and water crossings (850 and 560 unit water areas).
+Each form has unique physics properties, procedurally generated textures, visual appearance, and death animations, enabling creative level design with varied gap sizes and water crossings.
+
+**Key Features:**
+- 4 unique levels with infinite looping (levels 1-4 repeat)
+- Full audio system with background music and sound effects
+- Pause menu (ESC key)
+- Tutorial scene with interactive instructions
+- Options menu with volume controls
+- Lives system (4 lives, carries between levels)
+- Parallax background layers
+- Flying crow animations
+- Form-specific death animations
+- Water physics system
 
 ## System Architecture
 
@@ -81,68 +93,133 @@ Central configuration for all game constants and Phaser settings.
 #### BootScene (src/scenes/BootScene.js)
 - **Purpose**: Initial loading and setup
 - **Responsibilities**:
-  - Display loading text
-  - Preload assets (currently generates at runtime)
+  - Preload all game assets (images, audio)
+  - Load cheering chibi images for respawn screen
+  - Load crying chibi images for game over
+  - Load happy chibi images for victory
+  - Load menu background image
+  - Load audio files (BGM, jump, death, victory, game over)
   - Transition to MenuScene
 - **Lifecycle**: Runs once at game start
 
 #### MenuScene (src/scenes/MenuScene.js)
 - **Purpose**: Main menu and game entry point
 - **Features**:
-  - Title: "HAUNTED PUMPKIN"
+  - Title: "NIGHTMELLOW"
   - Subtitle: "ESCAPE THE DARKNESS"
-  - Control instructions
-  - Blinking "Press SPACE to Start" text
-- **Input**: SPACE key to start game
+  - Three interactive buttons:
+    - START GAME: Begin level 1
+    - HOW TO PLAY: Open tutorial scene
+    - OPTIONS: Open options menu
+  - Background image with dark overlay
+  - Hover effects on buttons
+- **Input**: Click buttons to navigate
+
+#### TutorialScene (src/scenes/TutorialScene.js)
+- **Purpose**: Teach players game mechanics
+- **Features**:
+  - Movement controls explanation
+  - Triple-form system overview
+  - Form-specific abilities
+  - Enemy warnings
+  - Visual demonstrations
+  - Back to menu button
+- **Input**: Click to return to menu
+
+#### OptionsScene (src/scenes/OptionsScene.js)
+- **Purpose**: Audio settings configuration
+- **Features**:
+  - Background music volume slider
+  - Sound effects volume slider
+  - Real-time volume adjustment
+  - Settings saved to localStorage
+  - Back to menu button
+- **Input**: Drag sliders, click back button
 
 #### GameScene (src/scenes/GameScene.js)
 - **Purpose**: Main gameplay scene
 - **Responsibilities**:
-  - Level creation and management
+  - Multi-level support (4 levels with infinite looping)
+  - Level data selection based on current level
   - Player, enemy, checkpoint, and goal instantiation
   - Collision detection setup
-  - Lives system management
-  - Camera control
-  - Background rendering (Halloween theme)
-  - UI rendering (lives display)
+  - Lives system management (4 lives, carries between levels)
+  - Camera control with parallax
+  - Parallax background rendering (multiple layers)
+  - UI rendering (lives display with hearts)
   - Game state tracking
-- **Update Loop**: Updates player, enemies, and checks for fall-off
+  - Water physics system
+  - Flying crow spawning and management
+  - Audio playback (BGM, jump, death sounds)
+- **Update Loop**: Updates player, enemies, crows, water physics, and checks for fall-off
 - **Key Methods**:
-  - `createHalloweenBackground()`: Renders night sky, moon, stars, castle, pumpkins, fog
-  - `loseLife()`: Handles life loss and respawn
-  - `showResurrectionScreen()`: Displays respawn animation
+  - `createParallaxBackground()`: Multi-layer scrolling background
+  - `createWaterAreas()`: Visual water with animated waves
+  - `checkWaterPhysics()`: Marshmallow water interaction (bobbing, splash, edge climbing)
+  - `handleDeath()`: Form-specific death animations, life loss, respawn flow
+  - `candyBreak()`: Candy ball explosion particles
+  - `marshmallowExpire()`: Burn and crumble animation
+  - `jellyDeath()`: Splat and dissolve animation
+  - `createDeathMarker()`: Floating ghost marker
+  - `respawnPlayer()`: Reset position, transform to candy, restore controls
   - `reachCheckpoint()`: Activates checkpoint and updates spawn point
-  - `reachGoal()`: Triggers victory sequence
+  - `reachGoal()`: Triggers victory, passes level and lives to next scene
   - `hitEnemy()`: Handles enemy collision
+  - `createCrows()`: Initialize crow spawning
+  - `spawnCrow()`: Create new flying crow
+  - `createLivesUI()`: Heart-based lives display
+  - `updateLivesUI()`: Update heart opacity based on remaining lives
 
-#### GameOverScene (src/scenes/GameOverScene.js)
-- **Purpose**: Display game over state
+#### PauseScene (src/scenes/PauseScene.js)
+- **Purpose**: Pause menu overlay
 - **Features**:
-  - "NO CANDY!" title
-  - Crying kids animation with tears
-  - Empty candy bags
-  - Restart and menu options
-- **Input**: SPACE to restart, M for menu
+  - "PAUSED" title
+  - Semi-transparent dark overlay
+  - Resume button (returns to game)
+  - Menu button (returns to main menu)
+  - Preserves game state
+- **Lifecycle**: Launched as overlay, pauses GameScene
+- **Input**: Click buttons or ESC to resume
 
 #### RespawnScene (src/scenes/RespawnScene.js)
 - **Purpose**: Display encouraging message during respawn
 - **Features**:
   - Cheering chibi character (3 variations based on lives lost)
-  - Encouraging messages that change with each death
+  - Encouraging messages that change with each death:
+    - 1 life lost: "Fight on, you can do it!"
+    - 2 lives lost: "Don't give up, Player!"
+    - 3 lives lost: "I want candies, so fight Player!"
   - Lives remaining display
   - Bouncing animation on chibi
   - 2.5 second display before respawn
-- **Lifecycle**: Pauses GameScene, displays message, resumes GameScene
+- **Lifecycle**: Pauses GameScene, displays message, calls respawnPlayer(), resumes GameScene
 - **Assets**: Uses pre-loaded chibi images from public/cheer-chibi/
+
+#### GameOverScene (src/scenes/GameOverScene.js)
+- **Purpose**: Display game over state
+- **Features**:
+  - "NO CANDY!" title
+  - Crying kids animation with tears (3 variations)
+  - Empty candy bags
+  - Sad messages
+  - Restart and menu options
+  - Game over audio
+- **Input**: SPACE to restart level 1, M for menu
+- **Assets**: Uses pre-loaded crying chibi images
 
 #### VictoryScene (src/scenes/VictoryScene.js)
 - **Purpose**: Celebrate level completion
 - **Features**:
   - "YOU ESCAPED!" title
+  - Happy chibi character (3 variations based on level)
   - Completion time display
-  - Best time saving to localStorage
-  - Restart and menu options
-- **Input**: SPACE to restart, M for menu
+  - Best time saving to localStorage (per level)
+  - Next level button (continues with current lives)
+  - Menu button
+  - Victory audio
+- **Input**: SPACE for next level, M for menu
+- **Assets**: Uses pre-loaded happy chibi images
+- **Level Progression**: Advances to next level (1→2→3→4→1...)
 
 ### 3. Entity System
 
@@ -178,10 +255,12 @@ Central configuration for all game constants and Phaser settings.
   // Jelly Form
   jellyMaxSpeed: 280,              // Slow horizontal
   jellyAcceleration: 840,          // Moderate acceleration
-  jellyJumpVelocity: -1300,        // Very high jumps
+  jellyJumpVelocity: -1500,        // Very high jumps
   jellyIdleHopVelocity: -500,      // Automatic small hops
   jellyBounce: 0.5,                // Bouncy physics
   jellyHopInterval: 800ms,         // Auto-hop frequency
+  jellyFastFallForce: 1200,        // Extra downward force
+  jellyFloatForce: -400,           // Reduced gravity when falling
   
   // Universal
   friction: 720,
@@ -189,7 +268,9 @@ Central configuration for all game constants and Phaser settings.
   
   // Water Physics (marshmallow only)
   waterBobSpeed: 0.02,             // Gentle bobbing
-  waterDrag: 180+,                 // Increases with speed
+  waterBobAmplitude: 6,            // Pixels of vertical movement
+  waterDipAmount: 0-25,            // Entry dip based on velocity
+  waterEdgeClimbBoost: -600,       // Upward velocity at edges
 }
 ```
 
@@ -304,7 +385,7 @@ When marshmallow enters water, realistic physics apply:
 
 **Visual Features:**
 - Black silhouette with animated wings
-- Two-frame wing flapping animation (200ms per frame)
+- Three-frame wing flapping animation (150ms per frame)
 - Procedurally generated texture with body, head, beak, wings, tail
 - Depth: -50 (behind all gameplay elements)
 
@@ -314,27 +395,62 @@ When marshmallow enters water, realistic physics apply:
 - Spawns from either side of the world
 - Destroys itself when off-screen
 - New crows spawn every 8 seconds
+- Purely atmospheric (no collision)
 
 **Properties:**
 ```javascript
 {
   direction: 1 or -1,  // Flight direction
   speed: 100-200,      // Horizontal velocity
-  wingFrame: 0 or 1,   // Current animation frame
+  wingFrame: 0-2,      // Current animation frame (3 frames)
   wingAnimTime: number // Animation timer
 }
 ```
 
 **Methods:**
-- `createCrowTextures(scene)`: Static method to generate two animation frames
+- `createCrowTextures(scene)`: Static method to generate three animation frames
 - `createCrowFrame(scene, textureName, wingPosition)`: Generate single frame texture
 - `update(delta)`: Move horizontally and animate wings
 
+### 9. Audio System
+
+#### AudioConfig (src/audioConfig.js)
+
+**Purpose**: Centralized audio management with volume controls
+
+**Features:**
+- Background music (BGM) volume control
+- Sound effects (SFX) volume control
+- LocalStorage persistence
+- Default volumes: 0.5 for both BGM and SFX
+
+**Methods:**
+- `getBGMVolume()`: Get current music volume (0-1)
+- `getSFXVolume()`: Get current SFX volume (0-1)
+- `setBGMVolume(volume)`: Set and save music volume
+- `setSFXVolume(volume)`: Set and save SFX volume
+
+**Audio Files:**
+- `bgm.mp3`: Background music (loops)
+- `jump-sound.mp3`: Jump sound effect
+- `death-sound.mp3`: Death/respawn sound
+- `victory.mp3`: Level completion sound
+- `game-over.mp3`: Game over sound
+
+**Integration:**
+- BootScene preloads all audio
+- GameScene plays BGM on loop
+- Player plays jump sound on jump
+- GameScene plays death sound on death
+- VictoryScene plays victory sound
+- GameOverScene plays game over sound
+- OptionsScene provides volume sliders
+
 ### 4. Data Layer
 
-#### LevelData (src/data/levelData.js)
+#### Level Data Files
 
-**Structure:**
+**Structure (all levels):**
 ```javascript
 {
   platforms: [
@@ -348,23 +464,44 @@ When marshmallow enters water, realistic physics apply:
   enemies: [                 // Enemy definitions
     { x, y, patrolStart, patrolEnd }
   ],
+  waterAreas: [              // Water sections (optional)
+    { x, y, width, height }
+  ],
   worldBounds: { width, height }
 }
 ```
 
-**Current Level:**
+**Level 1 (levelData.js):**
 - World size: 8220x1080
-- No checkpoints - continuous challenge (3 lives system)
+- 2 checkpoints (section markers)
 - 6 enemies with varied patrol routes
 - 20+ platforms creating platforming challenges
 - Ground divided into segments with varied gap sizes:
   - Small gap: 280 units (easy jump)
   - Medium gap: 520 units (requires marshmallow or precise platforming)
-  - Large gap: 850 units (marshmallow recommended)
+  - Large gap: 885 units (marshmallow recommended)
   - Huge gap: 980 units (marshmallow or jelly required)
-- 2 water areas (850 and 560 units wide) requiring marshmallow form
+- 2 water areas (885 and 585 units wide) requiring marshmallow form
 - Floating platforms over gaps offering risky alternatives
 - Strategic enemy placement forces form switching decisions
+
+**Level 2 (level2Data.js):**
+- Unique layout with different challenges
+- Different platform arrangements
+- Varied enemy placements
+
+**Level 3 (level3Data.js):**
+- Increased difficulty
+- More complex platforming sections
+
+**Level 4 (level4Data.js):**
+- Hardest level
+- Maximum challenge
+
+**Level Progression:**
+- Levels loop infinitely: 1→2→3→4→1→2...
+- Lives carry between levels
+- Each level has independent best time tracking
 
 ### 5. Input System
 
@@ -396,28 +533,43 @@ When marshmallow enters water, realistic physics apply:
 
 ### 7. Lives System
 
-**Implementation**: Players start with 3 lives displayed as hearts in the top-left corner.
+**Implementation**: Players start with 4 lives displayed as hearts in the top-left corner.
 
 **Death Triggers:**
 - Falling below world boundary (y > 1080)
 - Collision with enemy bats
 
 **Death Flow:**
-1. Life counter decrements
-2. Form-specific death animation plays:
-   - **Candy**: Breaks into colored particles
-   - **Marshmallow**: Burns dark, crumbles into ash with smoke
-   - **Jelly**: Splats and dissolves
-3. Spooky ghost marker floats up
-4. Death screen displays with lives remaining
-5. Player respawns at start position in candy form
-6. If lives reach 0, transition to GameOverScene
+1. `handleDeath()` called
+2. Life counter decrements (4→3→2→1→0)
+3. Death sound plays
+4. Player controls disabled (`isDead = true`)
+5. Camera flash effect (300ms red)
+6. Form-specific death animation plays:
+   - **Candy**: `candyBreak()` - Breaks into 12 colored particles
+   - **Marshmallow**: `marshmallowExpire()` - Burns dark, crumbles into ash with smoke
+   - **Jelly**: `jellyDeath()` - Splats and dissolves into 15 green particles
+7. Floating ghost marker appears (`createDeathMarker()`)
+8. Wait 1000ms
+9. If lives > 0:
+   - Pause GameScene
+   - Launch RespawnScene (overlay)
+   - Show cheering chibi with encouraging message
+   - Display lives remaining
+   - Wait 2500ms
+   - Call `respawnPlayer()` in GameScene
+   - Resume GameScene
+10. If lives == 0:
+    - Transition to GameOverScene
 
 **Respawn:**
-- Instant respawn at start position (no checkpoints in current level)
-- Always respawn in candy form
-- Full control restored immediately
-- Camera resumes following
+- Reset position to last checkpoint (or start if no checkpoint)
+- Transform to candy form
+- Restore controls (`isDead = false`)
+- Clear any tints/effects
+- Make player visible
+- Resume camera following
+- Lives carry between levels
 
 ### 8. Collision System
 

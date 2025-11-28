@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { AudioConfig } from '../audioConfig.js';
 
 export class GameOverScene extends Phaser.Scene {
     constructor() {
@@ -13,6 +14,23 @@ export class GameOverScene extends Phaser.Scene {
     }
     
     create() {
+        // Pause BGM
+        const bgm = this.sound.get('bgm');
+        if (bgm && bgm.isPlaying) {
+            bgm.pause();
+        }
+        
+        // Play game over sound
+        const gameOverSound = this.sound.add('game-over-sound', { volume: AudioConfig.getSFXVolume() });
+        gameOverSound.play();
+        
+        // Resume BGM after game over sound ends
+        gameOverSound.once('complete', () => {
+            if (bgm) {
+                bgm.resume();
+            }
+        });
+        
         // Dark background
         this.add.rectangle(
             this.cameras.main.centerX,
@@ -38,7 +56,7 @@ export class GameOverScene extends Phaser.Scene {
             this.cameras.main.centerX,
             this.cameras.main.centerY - 120,
             'The kids got no treats...',
-            { fontSize: '36px', fill: '#888888', fontStyle: 'italic' }
+            { fontFamily: 'Griffy, cursive', fontSize: '36px', fill: '#888888', fontStyle: 'italic' }
         );
         sadText.setOrigin(0.5);
         
@@ -50,7 +68,7 @@ export class GameOverScene extends Phaser.Scene {
             this.cameras.main.centerX,
             this.cameras.main.height - 120,
             'Press SPACE to Try Again',
-            { fontSize: '36px', fill: '#ff6600', fontStyle: 'bold' }
+            { fontFamily: 'Griffy, cursive', fontSize: '36px', fill: '#ff6600', fontStyle: 'bold' }
         );
         restartText.setOrigin(0.5);
         
@@ -69,13 +87,13 @@ export class GameOverScene extends Phaser.Scene {
             this.cameras.main.centerX,
             this.cameras.main.height - 60,
             'Press M for Menu',
-            { fontSize: '28px', fill: '#aaaaaa', fontStyle: 'bold' }
+            { fontFamily: 'Griffy, cursive', fontSize: '28px', fill: '#aaaaaa', fontStyle: 'bold' }
         );
         menuText.setOrigin(0.5);
         
-        // Input
+        // Input - always restart from level 1 with full lives
         this.input.keyboard.once('keydown-SPACE', () => {
-            this.scene.start('GameScene');
+            this.scene.start('GameScene', { level: 1, lives: 4 });
         });
         
         this.input.keyboard.once('keydown-M', () => {

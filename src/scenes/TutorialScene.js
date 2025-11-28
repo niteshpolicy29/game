@@ -28,6 +28,7 @@ export class TutorialScene extends Phaser.Scene {
         
         // Subtitle
         const subtitle = this.add.text(centerX, 120, 'Master the Three Forms', {
+            fontFamily: 'Griffy, cursive',
             fontSize: '28px',
             fill: '#ffaa00',
             fontStyle: 'italic'
@@ -55,6 +56,7 @@ export class TutorialScene extends Phaser.Scene {
         // Controls section
         const controlsY = 550;
         const controlsTitle = this.add.text(centerX, controlsY, 'CONTROLS', {
+            fontFamily: 'Griffy, cursive',
             fontSize: '32px',
             fill: '#ffffff',
             fontStyle: 'bold'
@@ -64,6 +66,7 @@ export class TutorialScene extends Phaser.Scene {
         const controls = this.add.text(centerX, controlsY + 50, 
             'Move: A/D or ←/→     Jump: W/Space/↑     Forms: E (Candy/Marshmallow)  Q (Jelly)',
             {
+                fontFamily: 'Griffy, cursive',
                 fontSize: '22px',
                 fill: '#aaaaaa'
             }
@@ -74,6 +77,7 @@ export class TutorialScene extends Phaser.Scene {
         const livesInfo = this.add.text(centerX, controlsY + 110,
             'You have 4 lives • No checkpoints - complete in one run!',
             {
+                fontFamily: 'Griffy, cursive',
                 fontSize: '24px',
                 fill: '#00ff00'
             }
@@ -82,6 +86,7 @@ export class TutorialScene extends Phaser.Scene {
         
         // Start prompt
         const startText = this.add.text(centerX, 1000, 'Press SPACE to Start Game', {
+            fontFamily: 'Griffy, cursive',
             fontSize: '42px',
             fill: '#ff6600',
             fontStyle: 'bold',
@@ -92,6 +97,7 @@ export class TutorialScene extends Phaser.Scene {
         
         // Back to menu hint
         const backText = this.add.text(centerX, 950, 'Press ESC to return to menu', {
+            fontFamily: 'Griffy, cursive',
             fontSize: '20px',
             fill: '#888888'
         });
@@ -123,6 +129,7 @@ export class TutorialScene extends Phaser.Scene {
         nameBox.setStrokeStyle(2, Phaser.Display.Color.HexStringToColor(color).color, 0.8);
         
         const name = this.add.text(x, y, formName, {
+            fontFamily: 'Griffy, cursive',
             fontSize: '26px',
             fill: color,
             fontStyle: 'bold',
@@ -133,6 +140,7 @@ export class TutorialScene extends Phaser.Scene {
         
         // Tips text - better spacing
         const tips = this.add.text(x, y + 50, tipText, {
+            fontFamily: 'Griffy, cursive',
             fontSize: '18px',
             fill: '#dddddd',
             align: 'center',

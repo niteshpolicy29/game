@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { AudioConfig } from '../audioConfig.js';
 
 export class BootScene extends Phaser.Scene {
     constructor() {
@@ -22,12 +23,22 @@ export class BootScene extends Phaser.Scene {
         this.load.image('bg-layer-4', '/game area background/4.png');
         this.load.image('bg-layer-5', '/game area background/5.png');
         
-        // Load ground and water textures (with cache busting for development)
-        this.load.image('ground-texture', `/assets/ground-spooky.png.png?v=${Date.now()}`);
-        this.load.image('water-texture', `/assets/water area.png?v=${Date.now()}`);
+        // Load audio files
+        this.load.audio('jump-sound', '/audio/jump-sound.mp3');
+        this.load.audio('game-over-sound', '/audio/game-over.mp3');
+        this.load.audio('bgm', '/audio/bgm.mp3');
+        this.load.audio('victory-sound', '/audio/victory.mp3');
+        this.load.audio('death-sound', '/audio/losses one live.mp3');
     }
     
     create() {
+        // Start background music (looping) with saved volume
+        if (!this.sound.get('bgm')) {
+            const musicVolume = AudioConfig.getMusicVolume();
+            const bgm = this.sound.add('bgm', { loop: true, volume: musicVolume });
+            bgm.play();
+        }
+        
         // Transition to menu
         this.scene.start('MenuScene');
     }

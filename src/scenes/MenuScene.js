@@ -43,7 +43,7 @@ export class MenuScene extends Phaser.Scene {
             centerX,
             centerY - 100,
             'ESCAPE THE DARKNESS',
-            { fontSize: '48px', fill: '#8b00ff', fontStyle: 'italic' }
+            { fontFamily: 'Griffy, cursive', fontSize: '48px', fill: '#8b00ff', fontStyle: 'italic' }
         );
         subtitle.setOrigin(0.5);
         
@@ -65,7 +65,7 @@ export class MenuScene extends Phaser.Scene {
             centerX,
             this.cameras.main.height - 40,
             'Built with Phaser 3',
-            { fontSize: '20px', fill: '#666666' }
+            { fontFamily: 'Griffy, cursive', fontSize: '20px', fill: '#666666' }
         );
         credits.setOrigin(0.5);
     }
@@ -80,6 +80,7 @@ export class MenuScene extends Phaser.Scene {
         
         // Button text
         const buttonText = this.add.text(x, y, text, {
+            fontFamily: 'Griffy, cursive',
             fontSize: '32px',
             fill: '#ff6600',
             fontStyle: 'bold'

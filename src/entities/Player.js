@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { PhysicsConfig } from '../config.js';
+import { AudioConfig } from '../audioConfig.js';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, moonX, moonY) {
@@ -338,6 +339,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.jellyHopTimer = Date.now(); // Reset hop timer
                 this.jellyFastFalling = false; // Clear fast-fall state
                 
+                // Play jump sound
+                this.scene.sound.play('jump-sound', { volume: AudioConfig.getSFXVolume() });
+                
                 // Kill existing tweens and reset scale
                 this.scene.tweens.killTweensOf(this);
                 this.setScale(1, 1);
@@ -360,6 +364,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.isGrounded = false;
                 this.wasAirborne = true;
                 this.jumpBufferTime = 0;
+                
+                // Play jump sound
+                this.scene.sound.play('jump-sound', { volume: AudioConfig.getSFXVolume() });
             } else {
                 // Buffer the jump input if in air
                 this.jumpBufferTime = Date.now();
@@ -383,6 +390,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.body.setVelocityY(jumpVel);
                 this.jumpBufferTime = 0;
                 this.wasAirborne = true;
+                
+                // Play jump sound
+                this.scene.sound.play('jump-sound', { volume: AudioConfig.getSFXVolume() });
                 
                 // Reset hop timer for jelly
                 if (this.currentForm === 'jelly') {

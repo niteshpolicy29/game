@@ -76,7 +76,7 @@ export class RespawnScene extends Phaser.Scene {
             this.cameras.main.centerX,
             this.cameras.main.centerY + 220,
             `Lives Remaining: ${livesRemaining}`,
-            { fontSize: '32px', fill: '#ff6600' }
+            { fontFamily: 'Griffy, cursive', fontSize: '32px', fill: '#ff6600' }
         );
         livesText.setOrigin(0.5);
         
@@ -85,7 +85,7 @@ export class RespawnScene extends Phaser.Scene {
             this.cameras.main.centerX,
             this.cameras.main.height - 80,
             'Respawning...',
-            { fontSize: '28px', fill: '#888888' }
+            { fontFamily: 'Griffy, cursive', fontSize: '28px', fill: '#888888' }
         );
         respawnText.setOrigin(0.5);
         

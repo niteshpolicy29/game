@@ -9,6 +9,7 @@ import { Goal } from '../entities/Goal.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Checkpoint } from '../entities/Checkpoint.js';
 import { Crow } from '../entities/Crow.js';
+import { AudioConfig } from '../audioConfig.js';
 
 export class GameScene extends Phaser.Scene {
     constructor() {
@@ -21,7 +22,7 @@ export class GameScene extends Phaser.Scene {
         // Get current level (default to 1)
         this.currentLevel = data.level || 1;
         
-        // Select level data
+        // Select level data - loop through 4 levels infinitely
         const levelDataMap = {
             1: LevelData,
             2: Level2Data,
@@ -29,7 +30,9 @@ export class GameScene extends Phaser.Scene {
             4: Level4Data
         };
         
-        this.levelData = levelDataMap[this.currentLevel] || LevelData;
+        // Use modulo to loop levels: 5→1, 6→2, 7→3, 8→4, 9→1, etc.
+        const levelIndex = ((this.currentLevel - 1) % 4) + 1;
+        this.levelData = levelDataMap[levelIndex];
         
         // Set world bounds
         this.physics.world.setBounds(0, 0, this.levelData.worldBounds.width, this.levelData.worldBounds.height);
@@ -37,8 +40,8 @@ export class GameScene extends Phaser.Scene {
         // Create parallax background layers
         this.createParallaxBackground();
         
-        // Initialize lives system
-        this.lives = 4;
+        // Initialize lives system - carry over from previous level or start with 4
+        this.lives = data.lives !== undefined ? data.lives : 4;
         this.isRespawning = false;
         this.isFalling = false;
         this.currentCheckpoint = this.levelData.playerStart;
@@ -108,8 +111,17 @@ export class GameScene extends Phaser.Scene {
             S: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
             D: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
             E: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E),
-            Q: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q)
+            Q: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q),
+            ESC: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
         };
+        
+        // ESC key to pause game
+        this.keys.ESC.on('down', () => {
+            if (!this.scene.isPaused('GameScene')) {
+                this.scene.pause('GameScene');
+                this.scene.launch('PauseScene', { level: this.currentLevel, lives: this.lives });
+            }
+        });
         
         // Setup camera to follow player at normal zoom
         this.cameras.main.setBounds(0, 0, this.levelData.worldBounds.width, this.levelData.worldBounds.height);
@@ -189,6 +201,9 @@ export class GameScene extends Phaser.Scene {
         this.lives--;
         this.updateLivesUI();
         
+        // Play death sound
+        this.sound.play('death-sound', { volume: AudioConfig.getSFXVolume() });
+        
         // Disable player controls
         this.player.isDead = true;
         this.player.body.setVelocity(0, 0);
@@ -197,15 +212,6 @@ export class GameScene extends Phaser.Scene {
         // Flash effect
         this.cameras.main.flash(300, 255, 0, 0);
         
-        // Check if game over
-        if (this.lives <= 0) {
-            // Game over - show game over screen
-            this.time.delayedCall(1000, () => {
-                this.scene.start('GameOverScene');
-            });
-            return;
-        }
-        
         // Play death animation based on form
         if (this.player.currentForm === 'marshmallow') {
             this.marshmallowExpire();
@@ -213,6 +219,15 @@ export class GameScene extends Phaser.Scene {
             this.jellyDeath();
         } else {
             this.candyBreak();
+        }
+        
+        // Check if game over
+        if (this.lives <= 0) {
+            // Game over - show game over screen after death animation
+            this.time.delayedCall(1000, () => {
+                this.scene.start('GameOverScene');
+            });
+            return;
         }
         
         // Show respawn scene with cheering chibi after death animation
@@ -472,6 +487,9 @@ export class GameScene extends Phaser.Scene {
             this.livesContainer.add(icon);
             this.livesIcons.push(icon);
         }
+        
+        // Update UI to reflect current lives immediately
+        this.updateLivesUI();
     }
     
     updateLivesUI() {
@@ -732,7 +750,7 @@ export class GameScene extends Phaser.Scene {
                         
                         // Wait a moment then show victory
                         this.time.delayedCall(800, () => {
-                            this.scene.start('VictoryScene', { time: completionTime, level: this.currentLevel });
+                            this.scene.start('VictoryScene', { time: completionTime, level: this.currentLevel, lives: this.lives });
                         });
                     }
                 });
