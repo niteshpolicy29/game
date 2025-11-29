@@ -49,7 +49,7 @@ export class MenuScene extends Phaser.Scene {
         
         // Create menu buttons
         this.createButton(centerX, centerY + 20, 'START GAME', () => {
-            this.scene.start('GameScene');
+            this.scene.start('IntroScene');
         });
         
         this.createButton(centerX, centerY + 100, 'HOW TO PLAY', () => {

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nightmellow</title>
+    <!-- Halloween Fonts from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Griffy&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'October Crow';
+            src: url('font/October%20Crow.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #1a1a1a;
+        }
+        #game-container {
+            width: 100%;
+            height: 100vh;
+            display: block;
+            position: relative;
+        }
+        #game-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100vh !important;
+        }
+    </style>
+  <script type="module" crossorigin src="./assets/index-BRycm0BM.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/phaser-0RJB29YE.js">
+</head>
+<body>
+    <div id="game-container"></div>
+</body>
+</html>
