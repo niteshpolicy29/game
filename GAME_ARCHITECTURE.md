@@ -2,7 +2,7 @@
 
 ## Overview
 
-Nightmellow is a 2D physics-based platformer built with Phaser 3. The architecture follows a scene-based structure with clear separation between game logic, rendering, and state management. The game uses Arcade Physics for collision detection and movement, with custom entity classes extending Phaser's built-in types.
+Nightmellow is a production-ready 2D physics-based platformer built with Phaser 3. The architecture follows a scene-based structure with clear separation between game logic, rendering, and state management. The game uses Arcade Physics for collision detection and movement, with custom entity classes extending Phaser's built-in types.
 
 The game features a unique triple-form transformation system where the player can switch between three distinct forms:
 - **Candy Ball**: Standard platforming with normal physics (480 max speed, -960 jump velocity)
@@ -12,16 +12,19 @@ The game features a unique triple-form transformation system where the player ca
 Each form has unique physics properties, procedurally generated textures, visual appearance, and death animations, enabling creative level design with varied gap sizes and water crossings.
 
 **Key Features:**
-- 4 unique levels with infinite looping (levels 1-4 repeat)
-- Full audio system with background music and sound effects
-- Pause menu (ESC key)
-- Tutorial scene with interactive instructions
-- Options menu with volume controls
+- 4 unique levels with infinite looping progression (1→2→3→4→1...)
+- Full audio system with BGM, SFX, and volume controls persisted to localStorage
+- Pause menu overlay (ESC key)
+- Interactive tutorial scene with gameplay instructions
+- Options menu with real-time volume sliders
 - Lives system (4 lives, carries between levels)
-- Parallax background layers
-- Flying crow animations
-- Form-specific death animations
-- Water physics system
+- Parallax background layers with depth
+- Flying crow animations with wing flapping (3 frames)
+- Form-specific death animations (candy break, marshmallow burn, jelly splat)
+- Sophisticated water physics system with bobbing, splash, and edge climbing
+- Respawn scene with encouraging messages and chibi animations (3 variations)
+- Victory scene with completion time tracking and best time saving per level
+- Game over scene with crying chibi animations (3 variations)
 
 ## System Architecture
 
