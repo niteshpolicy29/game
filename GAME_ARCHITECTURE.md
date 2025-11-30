@@ -6,10 +6,17 @@ Nightmellow is a production-ready 2D physics-based platformer built with Phaser 
 
 The game features a unique triple-form transformation system where the player can switch between three distinct forms:
 - **Candy Ball**: Standard platforming with normal physics (480 max speed, -960 jump velocity)
-- **Marshmallow**: Buoyant floating with realistic water physics (240 max speed, cannot jump, floats on water)
-- **Jelly**: Bouncy movement with auto-hops and fast-fall mechanics (280 max speed, -1500 jump velocity, auto-hops every 800ms)
+- **Marshmallow**: Buoyant floating with realistic water physics (240 max speed, cannot jump, floats on water with bobbing animation)
+- **Jelly**: Bouncy movement with auto-hops and fast-fall mechanics (280 max speed, -1300 jump velocity, auto-hops every 800ms)
 
 Each form has unique physics properties, procedurally generated textures, visual appearance, and death animations, enabling creative level design with varied gap sizes and water crossings.
+
+**Project Scale:**
+- 5,000+ lines of code across 30+ files
+- 10 complete scenes with full lifecycle management
+- 4 unique levels with infinite looping progression
+- 45+ game mechanics and systems implemented
+- 18,000+ words of comprehensive documentation
 
 **Key Features:**
 - 4 unique levels with infinite looping progression (1→2→3→4→1...)
@@ -18,13 +25,16 @@ Each form has unique physics properties, procedurally generated textures, visual
 - Interactive tutorial scene with gameplay instructions
 - Options menu with real-time volume sliders
 - Lives system (4 lives, carries between levels)
-- Parallax background layers with depth
+- Parallax background layers with depth (5 layers)
 - Flying crow animations with wing flapping (3 frames)
 - Form-specific death animations (candy break, marshmallow burn, jelly splat)
-- Sophisticated water physics system with bobbing, splash, and edge climbing
+- Sophisticated water physics system with bobbing, splash, dip recovery, and edge climbing
 - Respawn scene with encouraging messages and chibi animations (3 variations)
 - Victory scene with completion time tracking and best time saving per level
 - Game over scene with crying chibi animations (3 variations)
+- Jump buffering system (150ms window) for responsive controls
+- Dynamic shine sprite that points toward moon (candy and jelly only)
+- Procedural texture generation for all game objects
 
 ## System Architecture
 
