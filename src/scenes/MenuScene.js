@@ -38,14 +38,15 @@ export class MenuScene extends Phaser.Scene {
         title.setOrigin(0.5);
         title.setShadow(5, 5, '#000000', 10);
         
-        // Subtitle
-        const subtitle = this.add.text(
+        // Tagline
+        const tagline = this.add.text(
             centerX,
             centerY - 100,
-            'ESCAPE THE DARKNESS',
-            { fontFamily: 'Griffy, cursive', fontSize: '48px', fill: '#8b00ff', fontStyle: 'italic' }
+            'Run, roll, survive… the kids are counting on you.',
+            { fontFamily: 'Griffy, cursive', fontSize: '40px', fill: '#7CFF1A', fontStyle: 'italic' }
         );
-        subtitle.setOrigin(0.5);
+        tagline.setOrigin(0.5);
+        tagline.setShadow(3, 3, '#000000', 10);
         
         // Create menu buttons
         this.createButton(centerX, centerY + 20, 'START GAME', () => {
