@@ -12,11 +12,11 @@ The game features a unique triple-form transformation system where the player ca
 Each form has unique physics properties, procedurally generated textures, visual appearance, and death animations, enabling creative level design with varied gap sizes and water crossings.
 
 **Project Scale:**
-- 5,000+ lines of code across 30+ files
+- 5,500+ lines of code across 30+ files
 - 10 complete scenes with full lifecycle management
 - 4 unique levels with infinite looping progression
-- 45+ game mechanics and systems implemented
-- 18,000+ words of comprehensive documentation
+- 50+ game mechanics and systems implemented
+- 20,000+ words of comprehensive documentation
 
 **Key Features:**
 - 4 unique levels with infinite looping progression (1→2→3→4→1...)

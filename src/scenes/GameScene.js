@@ -225,7 +225,7 @@ export class GameScene extends Phaser.Scene {
         if (this.lives <= 0) {
             // Game over - show game over screen after death animation
             this.time.delayedCall(1000, () => {
-                this.scene.start('GameOverScene');
+                this.scene.start('GameOverScene', { level: this.currentLevel });
             });
             return;
         }
@@ -759,7 +759,7 @@ export class GameScene extends Phaser.Scene {
     }
     
     gameOver() {
-        this.scene.start('GameOverScene');
+        this.scene.start('GameOverScene', { level: this.currentLevel });
     }
     
     createHalloweenBackground() {

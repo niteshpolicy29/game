@@ -13,7 +13,26 @@ export class GameOverScene extends Phaser.Scene {
         this.load.image('chibi-kid-3', '/crying-chibi/chibi_three_crying-removebg-preview.png');
     }
     
-    create() {
+    create(data) {
+        // Get the level the player reached
+        this.currentLevel = data.level || 1;
+        
+        // Load highest level from localStorage
+        const savedHighestLevel = localStorage.getItem('highestLevel');
+        let highestLevel = savedHighestLevel ? parseInt(savedHighestLevel) : 0;
+        
+        // Calculate the highest completed level (current level - 1)
+        const completedLevel = Math.max(1, this.currentLevel - 1);
+        
+        // Update highest level if new record
+        if (completedLevel > highestLevel) {
+            highestLevel = completedLevel;
+            localStorage.setItem('highestLevel', highestLevel.toString());
+        }
+        
+        // Store for display
+        this.highestLevel = highestLevel;
+        
         // Pause BGM
         const bgm = this.sound.get('bgm');
         if (bgm && bgm.isPlaying) {
@@ -62,6 +81,25 @@ export class GameOverScene extends Phaser.Scene {
         
         // Create crying kids
         this.createCryingKids();
+        
+        // Display level died at (below chibi kids)
+        const levelText = this.add.text(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY + 160,
+            `You died at Level ${this.currentLevel}`,
+            { fontFamily: 'Griffy, cursive', fontSize: '32px', fill: '#ff9900', fontStyle: 'bold' }
+        );
+        levelText.setOrigin(0.5);
+        
+        // Display highest level completed (top right corner)
+        const highestLevelText = this.add.text(
+            this.cameras.main.width - 30,
+            30,
+            `Highest Level: ${this.highestLevel}`,
+            { fontFamily: 'Griffy, cursive', fontSize: '28px', fill: '#00ff00', fontStyle: 'bold' }
+        );
+        highestLevelText.setOrigin(1, 0);
+        highestLevelText.setScrollFactor(0);
         
         // Restart instructions
         const restartText = this.add.text(

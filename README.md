@@ -2,7 +2,7 @@
 
 A Halloween-themed 2D platformer game built with Phaser 3 featuring a unique triple-form transformation system. Control a candy ball character that can transform into marshmallow and jelly forms, each with distinct physics. Navigate through haunted landscapes with water crossings, avoid cursed bats, and collect your candy before the night ends!
 
-**Current Status**: Production-ready with 4 complete levels, infinite looping progression, full audio system with volume controls, pause menu, interactive tutorial, options menu, form-specific death animations, and sophisticated water physics.
+**Current Status**: Production-ready with 4 complete levels, infinite looping progression, full audio system with volume controls, pause menu, interactive tutorial, options menu, form-specific death animations, sophisticated water physics, and flying crow animations.
 
 ## Features
 
@@ -248,9 +248,9 @@ This project includes comprehensive documentation:
 **Version**: 1.0.0 (Production Ready)
 **Status**: Complete and stable
 **Performance**: 60 FPS stable across all 4 levels with 6+ enemies, water physics, parallax backgrounds, and flying crows
-**Code Quality**: Production-ready with comprehensive documentation (18,000+ words across 4 files)
-**Features**: All planned features implemented and tested (45+ game mechanics and systems)
-**Lines of Code**: 5,000+ lines across 30+ files
+**Code Quality**: Production-ready with comprehensive documentation (20,000+ words across 4 files)
+**Features**: All planned features implemented and tested (50+ game mechanics and systems)
+**Lines of Code**: 5,500+ lines across 30+ files
 
 ## Performance
 

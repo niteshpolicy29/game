@@ -20,6 +20,15 @@ export class VictoryScene extends Phaser.Scene {
         const nextLevel = currentLevel + 1;
         const hasNextLevel = true; // Infinite looping - always has next level
         
+        // Update highest level in localStorage
+        const savedHighestLevel = localStorage.getItem('highestLevel');
+        let highestLevel = savedHighestLevel ? parseInt(savedHighestLevel) : 0;
+        
+        if (currentLevel > highestLevel) {
+            highestLevel = currentLevel;
+            localStorage.setItem('highestLevel', highestLevel.toString());
+        }
+        
         // Pause BGM
         const bgm = this.sound.get('bgm');
         if (bgm && bgm.isPlaying) {
